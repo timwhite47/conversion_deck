@@ -29,10 +29,7 @@ class Pipeline(object):
         payments.import_customers()
 
     def load_events(self):
-        start_date = date.today() - timedelta(days=90)
-
-        for email in fetch_user_emails():
-            self.analytics.fetch_email(email, start_date)
+        self.analytics.fetch()
 
 if __name__ == '__main__':
     pipeline = Pipeline()

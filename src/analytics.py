@@ -2,6 +2,7 @@ import requests
 import json
 import boto3
 import botocore
+import pandas as pd
 from db import create_event
 from urllib import urlencode
 from datetime import date, timedelta
@@ -9,34 +10,29 @@ from os import environ
 from requests.auth import HTTPBasicAuth
 
 BASE_URL = 'https://data.mixpanel.com/api/2.0/export'
-EVENTS = [
-    "App Became Active",
-    "Deck Created",
-    "Land on Pricing Page",
-    "Land on Homepage",
-    "Started Onboarding",
-    "Slide start",
-    "Client error",
-    "Click Link",
-    "$campaign_open",
-    "Display Limit Notification",
-    "$campaign_delivery",
-    "Editor Opened"
-]
+
+with open('data/event_names.json') as json_file:
+    data = json.load(json_file)
+    EVENT_NAMES = map(lambda obj: obj['Name'], data)
+
 class Analytics(object):
     """Data from Mixpanel"""
     def __init__(self, token):
         self.token = token
 
-    def fetch_email(self, email, start_date=None, end_date=None):
+    def fetch(self, days=30, increment=1):
         if not end_date:
             end_date = date.today() - timedelta(days=1)
 
         if not start_date:
             start_date = date(2016,1,1)
 
-        url = self._generate_url(email, start_date, end_date)
-        self._fetch_url(url)
+        for num_days in xrange(1, days + 1):
+            end_date = date.today() - timedelta(days=num_days)
+            start_date = end_date - time_delta(days=increment)
+            url = self._generate_url(start_date, end_date)
+            self._fetch_url(url)
+
 
     def _fetch_url(self, url):
         print "Fetching URL: {}".format(url)
@@ -48,12 +44,11 @@ class Analytics(object):
                 event_data = line.decode('utf-8')
                 create_event(event_data)
 
-    def _generate_url(self, email, from_date, to_date):
+    def _generate_url(self, from_date, to_date):
         params = urlencode({
             "from_date": str(from_date),
             "to_date": str(to_date),
-            "event": json.dumps(EVENTS),
-            "where": 'properties["$email"] == "{}"'.format(email)
+            "event": json.dumps(EVENT_NAMES)
         })
 
         return '?'.join([BASE_URL, params])
