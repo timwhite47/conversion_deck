@@ -43,11 +43,13 @@ class Analytics(object):
 
     def _parse_entry(self, entry):
         try:
-            return json.loads(entry)
+            event_data = json.loads(entry)
+            event_data['event_id'] = event_data['properties']['distinct_id']
         except ValueError as e:
             pass
 
     def _parse_response(self, response):
+        # import ipdb; ipdb.set_trace()
         entries = response.text.split('\n')
         return map(self._parse_entry, entries)
 
