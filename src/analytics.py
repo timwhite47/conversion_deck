@@ -37,9 +37,14 @@ class Analytics(object):
             to_date = from_date + increment
 
     def _store_event(self, event):
-        return self.table.put_item(
-           Item=event
-        )
+        try:
+            return self.table.put_item(
+               Item=event
+            )
+        except botocore.exceptions.ClientError as e:
+            print "Could not store event"
+            print event
+
 
     def _parse_entry(self, entry):
         try:
@@ -54,7 +59,6 @@ class Analytics(object):
             pass
 
     def _parse_response(self, response):
-        # import ipdb; ipdb.set_trace()
         entries = response.text.split('\n')
         return map(self._parse_entry, entries)
 
