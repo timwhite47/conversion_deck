@@ -12,7 +12,7 @@ TABLE_NAME = 'conversion_deck.events'
 BASE_URL = 'https://data.mixpanel.com/api/2.0/export'
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
 TABLE = dynamodb.Table(TABLE_NAME)
-def _store_event(self, event):
+def _store_event(event):
     try:
         return TABLE.put_item(Item=event)
     except botocore.exceptions.ClientError as e:
