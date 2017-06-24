@@ -9,10 +9,12 @@ MIXPANEL_TOKEN = environ['HD_MIXPANEL_TOKEN']
 STRIPE_TOKEN = environ['HD_STRIPE_TOKEN']
 
 def _load_events_for_email(queue):
-     a = Analytics(token=MIXPANEL_TOKEN)
-     email = queue.get()
-     print 'Fetching events for email: '.format(email)
-     a.fetch_email(email)
+    a = Analytics(token=MIXPANEL_TOKEN)
+    email = queue.get()
+    while bool(email):
+        print 'Fetching events for email: {}'.format(email)
+        a.fetch_email(email)
+        email = queue.get()
 
 class Pipeline(object):
     """Pull data from data sources into MongoDB"""
@@ -44,10 +46,12 @@ class Pipeline(object):
 
         for email in fetch_user_emails():
             queue.put(email)
+            print queue.qsize()
             self.analytics.fetch_email(email)
 
-        while len(queue) > 1:
-            sleep(1)
+        while queue.qsize() > 0:
+            print "Queue Size: ".format(queue.qsize())
+            sleep(5)
 
         pool.close()
         return True
