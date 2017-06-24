@@ -9,7 +9,20 @@ from os import environ
 from requests.auth import HTTPBasicAuth
 
 BASE_URL = 'https://data.mixpanel.com/api/2.0/export'
-
+EVENTS = [
+    "App Became Active",
+    "Deck Created",
+    "Land on Pricing Page",
+    "Land on Homepage",
+    "Started Onboarding",
+    "Slide start",
+    "Client error",
+    "Click Link",
+    "$campaign_open",
+    "Display Limit Notification",
+    "$campaign_delivery",
+    "Editor Opened"
+]
 class Analytics(object):
     """Data from Mixpanel"""
     def __init__(self, token):
@@ -39,6 +52,7 @@ class Analytics(object):
         params = urlencode({
             "from_date": str(from_date),
             "to_date": str(to_date),
+            "event": EVENTS,
             "where": 'properties["$email"] == "{}"'.format(email)
         })
 
