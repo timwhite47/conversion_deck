@@ -41,6 +41,8 @@ def create_user(stripe_customer):
     try:
         print "Adding User: {}".format(user['email'])
         USER_TABLE.put_item(Item=user)
+    except KeyboardInterrupt as e:
+        raise e
     except Exception as e:
         _print_error(e, user, USER_TABLE)
         pass
@@ -53,6 +55,8 @@ def create_event(event):
     try:
         print "Adding Event: {}".format(event['event_id'])
         return EVENTS_TABLE.put_item(Item=event)
+    except KeyboardInterrupt as e:
+        raise e
     except Exception as e:
         _print_error(e, event, EVENTS_TABLE)
 
