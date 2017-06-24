@@ -53,7 +53,7 @@ def create_event(event):
     # if not event:
     #     return
     try:
-        print "Adding Event: {}".format(event['event_id'])
+        # print "Adding Event: {}".format(event['event_id'])
         return EVENTS_TABLE.put_item(Item=event)
     except KeyboardInterrupt as e:
         raise e
