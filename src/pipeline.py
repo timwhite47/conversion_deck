@@ -46,7 +46,11 @@ class Pipeline(object):
             print 'Adding user: {}'.format(customer.email)
             user = json.loads(str(customer))
             user = replace_decimals(user)
-            item = USER_TABLE.put_item(Item=user)
+            try:
+                USER_TABLE.put_item(Item=user)
+            except Exception as e:
+                import ipdb; ipdb.set_trace()
+                raise e
 
     def load_events(self):
         timeframe = timedelta(days=7)
