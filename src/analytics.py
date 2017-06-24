@@ -47,6 +47,10 @@ class Analytics(object):
             event_data['event_id'] = event_data['properties']['distinct_id']
         except ValueError as e:
             pass
+        except KeyError as e:
+            print "Could not parse entry"
+            print event_data
+            pass
 
     def _parse_response(self, response):
         # import ipdb; ipdb.set_trace()
