@@ -8,6 +8,7 @@ from datetime import date, timedelta
 from os import environ
 from requests.auth import HTTPBasicAuth
 
+MIXPANEL_TOKEN = environ['HD_MIXPANEL_TOKEN']
 TABLE_NAME = 'conversion_deck.events'
 BASE_URL = 'https://data.mixpanel.com/api/2.0/export'
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
@@ -44,6 +45,7 @@ def _parse_entry(entry):
 
 def _fetch_url(url):
     print "Fetching URL: {}".format(url)
+    auth = HTTPBasicAuth(MIXPANEL_TOKEN, '')
     response = requests.get(url, auth=auth, stream=True)
 
     for line in response.iter_lines():
@@ -55,8 +57,6 @@ def _fetch_url(url):
 class Analytics(object):
     """Data from Mixpanel"""
     def __init__(self):
-        self.token = environ['HD_MIXPANEL_TOKEN']
-
         try:
             cpus = cpu_count()
         except NotImplementedError:
@@ -68,7 +68,6 @@ class Analytics(object):
         increment = timedelta(days=1)
         from_date = start_date
         to_date = start_date + increment
-        auth = HTTPBasicAuth(self.token, '')
         pool = Pool(processes=self.cpus)
         urls = list()
         while from_date <= end_date:
