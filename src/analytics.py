@@ -33,8 +33,8 @@ class Analytics(object):
 
         self.cpus = cpus
 
-    def fetch_email(self, email, start_date, end_date):
-        increment = timedelta(days=7)
+    def fetch_email(self, email, start_date, end_date, increment=30):
+        increment = timedelta(days=increment)
         from_date = start_date
         to_date = start_date + increment
         pool = Pool(processes=self.cpus)

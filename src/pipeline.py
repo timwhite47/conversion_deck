@@ -21,12 +21,12 @@ class Pipeline(object):
         payments.import_customers()
 
     def load_events(self):
-        timeframe = timedelta(days=28)
+        timeframe = timedelta(days=180)
 
-        end_date = date.today()
+        end_date = date.today() - timedelta(days=1)
         start_date = end_date - timeframe
         for email in fetch_user_emails():
-            self.analytics.fetch_email(email, start_date, end_date)
+            self.analytics.fetch_email(email, start_date, end_date, increment=60)
 
 if __name__ == '__main__':
     pipeline = Pipeline()
