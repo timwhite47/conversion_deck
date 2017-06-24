@@ -13,6 +13,44 @@ BASE_URL = 'https://data.mixpanel.com/api/2.0/export'
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
 TABLE = dynamodb.Table(TABLE_NAME)
 
+def _store_event(event):
+    try:
+        item = TABLE.put_item(Item=event)
+        print "Event Stored {}".format(event['event_id'])
+
+        return item
+    except botocore.exceptions.ClientError as e:
+        print "Could not store event"
+        print event
+        print e
+        print '='*20
+    except Exception as e:
+        print "Could not store event"
+        print event
+        print e
+        print '='*20
+
+def _parse_entry(entry):
+    try:
+        event_data = json.loads(entry)
+        event_data['event_id'] = event_data['properties']['distinct_id']
+        return event_data
+    except ValueError as e:
+        pass
+    except KeyError as e:
+        print "Could not parse entry"
+        print event_data
+        pass
+
+def _fetch_url(url):
+    print "Fetching URL: {}".format(url)
+    response = requests.get(url, auth=auth, stream=True)
+
+    for line in response.iter_lines():
+        if line:
+            decoded_line = line.decode('utf-8')
+            event_data = _parse_entry(decoded_line)
+            _store_event(event_data)
 
 class Analytics(object):
     """Data from Mixpanel"""
@@ -31,55 +69,16 @@ class Analytics(object):
         from_date = start_date
         to_date = start_date + increment
         auth = HTTPBasicAuth(self.token, '')
-        # pool = Pool(processes=self.cpus)
-        
+        pool = Pool(processes=self.cpus)
+        urls = list()
         while from_date <= end_date:
             url = self._generate_url(from_date, to_date)
-
-            print "Fetching URL: {}".format(url)
-            response = requests.get(url, auth=auth, stream=True)
-
-            for line in response.iter_lines():
-                if line:
-                    decoded_line = line.decode('utf-8')
-                    event_data = self._parse_entry(decoded_line)
-                    self._store_event(event_data)
+            urls.append(url)
 
             from_date = to_date
             to_date = from_date + increment
 
-    def _store_event(self, event):
-        try:
-            item = TABLE.put_item(Item=event)
-            print "Event Stored {}".format(event['event_id'])
-
-            return item
-        except botocore.exceptions.ClientError as e:
-            print "Could not store event"
-            print event
-            print e
-            print '='*20
-        except Exception as e:
-            print "Could not store event"
-            print event
-            print e
-            print '='*20
-
-    def _parse_entry(self, entry):
-        try:
-            event_data = json.loads(entry)
-            event_data['event_id'] = event_data['properties']['distinct_id']
-            return event_data
-        except ValueError as e:
-            pass
-        except KeyError as e:
-            print "Could not parse entry"
-            print event_data
-            pass
-
-    def _parse_response(self, response):
-        entries = response.text.split('\n')
-        return map(self._parse_entry, entries)
+        pool.map(_fetch_url, urls)
 
     def _generate_url(self, from_date, to_date):
         params = urlencode({
@@ -91,6 +90,8 @@ class Analytics(object):
 
 if __name__ == '__main__':
     a = Analytics()
-    start_date = date(2017, 6, 1)
+    timeframe = timedelta(days=3)
+
     end_date = date.today()
+    start_date = end_date - timeframe
     a.fetch(start_date, end_date)
