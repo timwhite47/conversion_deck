@@ -20,7 +20,7 @@ class Pipeline(object):
         self.cpus = cpus
 
     def run(self):
-        self.load_users()
+        # self.load_users()
         self.load_events()
 
     def load_users(self):
