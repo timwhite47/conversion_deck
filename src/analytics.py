@@ -23,6 +23,7 @@ class Analytics(object):
             start_date = date(2016,1,1)
 
         url = self._generate_url(email, start_date, end_date)
+        self._fetch_url(url)
 
     def _fetch_url(self, url):
         print "Fetching URL: {}".format(url)

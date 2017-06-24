@@ -31,7 +31,7 @@ class Pipeline(object):
         self.cpus = cpus
 
     def run(self):
-        self.load_users()
+        #self.load_users()
         self.load_events()
 
     def load_users(self):
@@ -50,7 +50,7 @@ class Pipeline(object):
             self.analytics.fetch_email(email)
 
         while queue.qsize() > 0:
-            print "Queue Size: ".format(queue.qsize())
+            print "Queue Size: {}".format(queue.qsize())
             sleep(5)
 
         pool.close()
