@@ -45,6 +45,7 @@ class Analytics(object):
         try:
             event_data = json.loads(entry)
             event_data['event_id'] = event_data['properties']['distinct_id']
+            return event_data
         except ValueError as e:
             pass
         except KeyError as e:
