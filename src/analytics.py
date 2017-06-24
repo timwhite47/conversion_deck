@@ -33,10 +33,15 @@ class Analytics(object):
         auth = HTTPBasicAuth(self.token, '')
         response = requests.get(url, auth=auth, stream=True)
 
-        for line in response.iter_lines():
-            if line:
-                event_data = line.decode('utf-8')
-                create_event(event_data)
+        try:
+            for line in response.iter_lines():
+                if line:
+                    event_data = line.decode('utf-8')
+                    create_event(event_data)
+        except requests.exceptions.ChunkedEncodingError as e:
+            print "IncompleteRead"
+            print e
+            print '='*20
 
     def _generate_url(self, from_date, to_date):
         params = urlencode({
