@@ -23,7 +23,7 @@ class Analytics(object):
     def fetch(self, days=30, increment=1):
         for num_days in xrange(1, days + 1):
             end_date = date.today() - timedelta(days=num_days)
-            start_date = end_date - time_delta(days=increment)
+            start_date = end_date - timedelta(days=increment)
             url = self._generate_url(start_date, end_date)
             self._fetch_url(url)
 
