@@ -3,7 +3,6 @@ import json
 import boto3
 import botocore
 from db import create_event
-from multiprocessing import cpu_count, Pool
 from urllib import urlencode
 from datetime import date, timedelta
 from os import environ
@@ -11,43 +10,29 @@ from requests.auth import HTTPBasicAuth
 
 BASE_URL = 'https://data.mixpanel.com/api/2.0/export'
 
-def _fetch_url(url):
-    print "Fetching URL: {}".format(url)
-    auth = HTTPBasicAuth(environ['HD_MIXPANEL_TOKEN'], '')
-    response = requests.get(url, auth=auth, stream=True)
-
-    for line in response.iter_lines():
-        if line:
-            event_data = line.decode('utf-8')
-            create_event(event_data)
-
 class Analytics(object):
     """Data from Mixpanel"""
     def __init__(self, token):
         self.token = token
 
-        try:
-            cpus = cpu_count()
-        except NotImplementedError:
-            cpus = 4
+    def fetch_email(self, email, start_date=None, end_date=None):
+        if not end_date:
+            end_date = date.today() - timedelta(days=1)
 
-        self.cpus = cpus
+        if not start_date:
+            start_date = date(2016,1,1)
 
-    def fetch_email(self, email, start_date, end_date, increment=30):
-        increment = timedelta(days=increment)
-        from_date = start_date
-        to_date = start_date + increment
-        pool = Pool(processes=self.cpus)
-        urls = list()
+        url = self._generate_url(email, start_date, end_date)
 
-        while from_date <= end_date:
-            url = self._generate_url(email, from_date, to_date)
-            urls.append(url)
+    def _fetch_url(self, url):
+        print "Fetching URL: {}".format(url)
+        auth = HTTPBasicAuth(self.token, '')
+        response = requests.get(url, auth=auth, stream=True)
 
-            from_date = to_date
-            to_date = from_date + increment
-
-        pool.map(_fetch_url, urls)
+        for line in response.iter_lines():
+            if line:
+                event_data = line.decode('utf-8')
+                create_event(event_data)
 
     def _generate_url(self, email, from_date, to_date):
         params = urlencode({

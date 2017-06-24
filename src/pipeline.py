@@ -3,6 +3,7 @@ from db import fetch_user_emails
 from payments import Payment
 from analytics import Analytics
 from datetime import date, timedelta
+from multiprocessing import cpu_count, Pool
 
 class Pipeline(object):
     """Pull data from data sources into MongoDB"""
@@ -10,6 +11,13 @@ class Pipeline(object):
     def __init__(self):
         self.analytics = Analytics(token=environ['HD_MIXPANEL_TOKEN'])
         self.payment_processor = Payment(token=environ['HD_STRIPE_TOKEN'])
+
+        try:
+            cpus = cpu_count()
+        except NotImplementedError:
+            cpus = 4
+
+        self.cpus = cpus
 
     def run(self):
         self.load_users()
@@ -21,12 +29,8 @@ class Pipeline(object):
         payments.import_customers()
 
     def load_events(self):
-        timeframe = timedelta(days=180)
-
-        end_date = date.today() - timedelta(days=1)
-        start_date = end_date - timeframe
         for email in fetch_user_emails():
-            self.analytics.fetch_email(email, start_date, end_date, increment=60)
+            self.analytics.fetch_email(email)
 
 if __name__ == '__main__':
     pipeline = Pipeline()

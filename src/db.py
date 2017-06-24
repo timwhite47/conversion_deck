@@ -50,8 +50,8 @@ def create_user(stripe_customer):
 def create_event(event):
     event = _parse_event(event)
     event = _sanitize_dynamodb(event)
-    if not event:
-        return
+    # if not event:
+    #     return
     try:
         print "Adding Event: {}".format(event['event_id'])
         return EVENTS_TABLE.put_item(Item=event)
