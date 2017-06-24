@@ -15,7 +15,10 @@ TABLE = dynamodb.Table(TABLE_NAME)
 
 def _store_event(event):
     try:
-        return TABLE.put_item(Item=event)
+        item = TABLE.put_item(Item=event)
+        print "Event Stored {}".format(event['event_id'])
+
+        return item
     except botocore.exceptions.ClientError as e:
         print "Could not store event"
         print event
