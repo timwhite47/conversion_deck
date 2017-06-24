@@ -89,7 +89,7 @@ class Analytics(object):
 
 if __name__ == '__main__':
     a = Analytics()
-    timeframe = timedelta(days=3)
+    timeframe = timedelta(days=7)
 
     end_date = date.today()
     start_date = end_date - timeframe
