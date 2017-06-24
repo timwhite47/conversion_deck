@@ -57,8 +57,8 @@ def create_event(event):
         return EVENTS_TABLE.put_item(Item=event)
     except KeyboardInterrupt as e:
         raise e
-    except Exception as e:
-        _print_error(e, event, EVENTS_TABLE)
+    # except Exception as e:
+    #     _print_error(e, event, EVENTS_TABLE)
 
 def _print_error(e, data, table_name):
     print "Could not store data in {}".format(table_name)
