@@ -21,12 +21,6 @@ class Analytics(object):
         self.token = token
 
     def fetch(self, days=30, increment=1):
-        if not end_date:
-            end_date = date.today() - timedelta(days=1)
-
-        if not start_date:
-            start_date = date(2016,1,1)
-
         for num_days in xrange(1, days + 1):
             end_date = date.today() - timedelta(days=num_days)
             start_date = end_date - time_delta(days=increment)
