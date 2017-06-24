@@ -9,6 +9,23 @@ dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
 TABLE_NAME = 'conversion_deck.users'
 USER_TABLE = dynamodb.Table(TABLE_NAME)
 
+def replace_decimals(obj):
+    if isinstance(obj, list):
+        for i in xrange(len(obj)):
+            obj[i] = replace_decimals(obj[i])
+        return obj
+    elif isinstance(obj, dict):
+        for k in obj.iterkeys():
+            obj[k] = replace_decimals(obj[k])
+        return obj
+    elif isinstance(obj, decimal.Decimal):
+        if obj % 1 == 0:
+            return int(obj)
+        else:
+            return float(obj)
+    else:
+        return obj
+
 class Pipeline(object):
     """Pull data from data sources into MongoDB"""
 
@@ -27,6 +44,7 @@ class Pipeline(object):
         for customer in payments.users(limit=100):
             print 'Adding user: {}'.format(customer.email)
             user = json.loads(str(customer))
+            user = replace_decimals(user)
             item = USER_TABLE.put_item(Item=user)
 
     def load_events(self):
