@@ -41,7 +41,7 @@ class Analytics(object):
            Item=event
         )
 
-    def _parse_entry(entry):
+    def _parse_entry(self, entry):
         try:
             return json.loads(entry)
         except ValueError as e:
