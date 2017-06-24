@@ -21,7 +21,7 @@ class Pipeline(object):
         payments.import_customers()
 
     def load_events(self):
-        timeframe = timedelta(days=7)
+        timeframe = timedelta(days=28)
 
         end_date = date.today()
         start_date = end_date - timeframe
