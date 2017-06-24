@@ -1,15 +1,21 @@
 import stripe
 from os import environ
+from db import create_user
 
 class Payment(object):
     """docstring for Payment."""
     def __init__(self, token):
         self.token = token
 
-    def users(self, limit=None):
+    def customers(self, limit=None):
         customers = stripe.Customer.list(api_key=self.token, limit=limit)
+
         for customer in customers.auto_paging_iter():
             yield customer
+
+    def import_customers(self):
+        for customer in self.customers():
+            create_user(customer)
 
 
 if __name__ == '__main__':

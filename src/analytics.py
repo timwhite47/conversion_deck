@@ -2,61 +2,30 @@ import requests
 import json
 import boto3
 import botocore
+from db import create_event
 from multiprocessing import cpu_count, Pool
 from urllib import urlencode
 from datetime import date, timedelta
 from os import environ
 from requests.auth import HTTPBasicAuth
 
-MIXPANEL_TOKEN = environ['HD_MIXPANEL_TOKEN']
-TABLE_NAME = 'conversion_deck.events'
 BASE_URL = 'https://data.mixpanel.com/api/2.0/export'
-dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-TABLE = dynamodb.Table(TABLE_NAME)
-
-def _store_event(event):
-    try:
-        item = TABLE.put_item(Item=event)
-        print "Event Stored {}".format(event['event_id'])
-
-        return item
-    except botocore.exceptions.ClientError as e:
-        print "Could not store event"
-        print event
-        print e
-        print '='*20
-    except Exception as e:
-        print "Could not store event"
-        print event
-        print e
-        print '='*20
-
-def _parse_entry(entry):
-    try:
-        event_data = json.loads(entry)
-        event_data['event_id'] = event_data['properties']['distinct_id']
-        return event_data
-    except ValueError as e:
-        pass
-    except KeyError as e:
-        print "Could not parse entry"
-        print event_data
-        pass
 
 def _fetch_url(url):
     print "Fetching URL: {}".format(url)
-    auth = HTTPBasicAuth(MIXPANEL_TOKEN, '')
+    auth = HTTPBasicAuth(environ['HD_MIXPANEL_TOKEN'], '')
     response = requests.get(url, auth=auth, stream=True)
 
     for line in response.iter_lines():
         if line:
-            decoded_line = line.decode('utf-8')
-            event_data = _parse_entry(decoded_line)
-            _store_event(event_data)
+            event_data = line.decode('utf-8')
+            create_event(event_data)
 
 class Analytics(object):
     """Data from Mixpanel"""
-    def __init__(self):
+    def __init__(self, token):
+        self.token = token
+
         try:
             cpus = cpu_count()
         except NotImplementedError:
