@@ -23,7 +23,6 @@ class Pipeline(object):
     def load_users(self):
         ''' Load users in to MongoDB from Stripe'''
         payments = self.payment_processor
-        users = self.mongodb[USER_COL_NAME]
 
         for customer in payments.users(limit=100):
             print 'Adding user: {}'.format(customer.email)
