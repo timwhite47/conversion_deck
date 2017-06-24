@@ -33,7 +33,7 @@ class Analytics(object):
         self.token = environ['HD_MIXPANEL_TOKEN']
 
         try:
-            cpus = multiprocessing.cpu_count()
+            cpus = cpu_count()
         except NotImplementedError:
             cpus = 4
 
