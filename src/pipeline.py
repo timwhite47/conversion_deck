@@ -1,5 +1,6 @@
 import json
 import boto3
+import decimal
 from os import environ
 from payments import Payment
 from analytics import Analytics
