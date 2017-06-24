@@ -1,6 +1,8 @@
 import requests
 import json
 import boto3
+import botocore
+
 from urllib import urlencode
 from datetime import date, timedelta
 from os import environ
@@ -44,6 +46,9 @@ class Analytics(object):
         except botocore.exceptions.ClientError as e:
             print "Could not store event"
             print event
+            print e
+        except Exception as e:
+            import ipdb; ipdb.set_trace()
 
 
     def _parse_entry(self, entry):
