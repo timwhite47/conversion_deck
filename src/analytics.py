@@ -30,9 +30,7 @@ class Analytics(object):
             response = requests.get(url, auth=auth)
 
             event_data = self._parse_response(response)
-            event_data = [json.loads(s) for s in event_data]
             [self._store_event(event) for event in event_data]
-
             print "{} events stored".format(len(event_data))
 
             from_date = to_date
@@ -43,8 +41,15 @@ class Analytics(object):
            Item=event
         )
 
+    def _parse_entry(entry):
+        try:
+            return json.loads(entry)
+        except ValueError as e:
+            pass
+
     def _parse_response(self, response):
-        return response.text.split('\n')
+        entries = response.text.split('\n')
+        return map(self._parse_entry, entries)
 
     def _generate_url(self, from_date, to_date):
         params = urlencode({
