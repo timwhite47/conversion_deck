@@ -30,6 +30,7 @@ class Analytics(object):
             response = requests.get(url, auth=auth)
 
             event_data = self._parse_response(response)
+            event_data = [json.loads(s) for s in event_data]
             [self._store_event(event) for event in event_data]
 
             print "{} events stored".format(len(event_data))
