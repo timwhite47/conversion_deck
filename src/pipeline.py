@@ -27,7 +27,7 @@ class Pipeline(object):
         for customer in payments.users(limit=100):
             print 'Adding user: {}'.format(customer.email)
             user = json.loads(str(customer))
-            item = USER_TABLE.put_item(Item=event)
+            item = USER_TABLE.put_item(Item=user)
 
     def load_events(self):
         timeframe = timedelta(days=7)
