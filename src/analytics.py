@@ -13,22 +13,6 @@ BASE_URL = 'https://data.mixpanel.com/api/2.0/export'
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
 TABLE = dynamodb.Table(TABLE_NAME)
 
-def _store_event(event):
-    try:
-        item = TABLE.put_item(Item=event)
-        print "Event Stored {}".format(event['event_id'])
-
-        return item
-    except botocore.exceptions.ClientError as e:
-        print "Could not store event"
-        print event
-        print e
-        print '='*20
-    except Exception as e:
-        print "Could not store event"
-        print event
-        print e
-        print '='*20
 
 class Analytics(object):
     """Data from Mixpanel"""
@@ -47,20 +31,39 @@ class Analytics(object):
         from_date = start_date
         to_date = start_date + increment
         auth = HTTPBasicAuth(self.token, '')
-        pool = Pool(processes=self.cpus)
+        # pool = Pool(processes=self.cpus)
+        
         while from_date <= end_date:
             url = self._generate_url(from_date, to_date)
 
             print "Fetching URL: {}".format(url)
-            response = requests.get(url, auth=auth)
+            response = requests.get(url, auth=auth, stream=True)
 
-            event_data = self._parse_response(response)
-            pool.map(_store_event, event_data)
-            print "{} events stored".format(len(event_data))
+            for line in response.iter_lines():
+                if line:
+                    decoded_line = line.decode('utf-8')
+                    event_data = self._parse_entry(decoded_line)
+                    self._store_event(event_data)
 
             from_date = to_date
             to_date = from_date + increment
 
+    def _store_event(self, event):
+        try:
+            item = TABLE.put_item(Item=event)
+            print "Event Stored {}".format(event['event_id'])
+
+            return item
+        except botocore.exceptions.ClientError as e:
+            print "Could not store event"
+            print event
+            print e
+            print '='*20
+        except Exception as e:
+            print "Could not store event"
+            print event
+            print e
+            print '='*20
 
     def _parse_entry(self, entry):
         try:
