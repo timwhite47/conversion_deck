@@ -33,14 +33,15 @@ class Analytics(object):
 
         self.cpus = cpus
 
-    def fetch(self, start_date, end_date):
+    def fetch_email(self, email, start_date, end_date):
         increment = timedelta(days=1)
         from_date = start_date
         to_date = start_date + increment
         pool = Pool(processes=self.cpus)
         urls = list()
+
         while from_date <= end_date:
-            url = self._generate_url(from_date, to_date)
+            url = self._generate_url(email, from_date, to_date)
             urls.append(url)
 
             from_date = to_date
@@ -48,10 +49,11 @@ class Analytics(object):
 
         pool.map(_fetch_url, urls)
 
-    def _generate_url(self, from_date, to_date):
+    def _generate_url(self, email, from_date, to_date):
         params = urlencode({
             "from_date": str(from_date),
             "to_date": str(to_date),
+            "where": 'properties["$email"] == "{}"'.format(email)
         })
 
         return '?'.join([BASE_URL, params])

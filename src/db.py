@@ -31,6 +31,9 @@ def _sanitize_dynamodb(data):
         new_data = data
     return new_data
 
+def fetch_user_emails():
+    response = USER_TABLE.scan(Select='SPECIFIC_ATTRIBUTES',AttributesToGet=['email'])
+    return [obj['email'] for obj in response['Items']]
 
 def create_user(stripe_customer):
     user = json.loads(str(stripe_customer))
@@ -45,7 +48,8 @@ def create_user(stripe_customer):
 def create_event(event):
     event = _parse_event(event)
     event = _sanitize_dynamodb(event)
-
+    if not event:
+        return
     try:
         print "Adding Event: {}".format(event['event_id'])
         return EVENTS_TABLE.put_item(Item=event)

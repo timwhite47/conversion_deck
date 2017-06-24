@@ -1,4 +1,5 @@
 from os import environ
+from db import fetch_user_emails
 from payments import Payment
 from analytics import Analytics
 from datetime import date, timedelta
@@ -24,7 +25,8 @@ class Pipeline(object):
 
         end_date = date.today()
         start_date = end_date - timeframe
-        self.analytics.fetch(start_date, end_date)
+        for email in fetch_user_emails():
+            self.analytics.fetch_email(email, start_date, end_date)
 
 if __name__ == '__main__':
     pipeline = Pipeline()
