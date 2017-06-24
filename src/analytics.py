@@ -52,7 +52,7 @@ class Analytics(object):
         params = urlencode({
             "from_date": str(from_date),
             "to_date": str(to_date),
-            "event": EVENTS,
+            "event": json.dumps(EVENTS),
             "where": 'properties["$email"] == "{}"'.format(email)
         })
 
