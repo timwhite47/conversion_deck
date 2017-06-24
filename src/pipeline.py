@@ -3,25 +3,14 @@ from db import fetch_user_emails
 from payments import Payment
 from analytics import Analytics
 from datetime import date, timedelta
-from multiprocessing import cpu_count, Pool, Queue
-from time import sleep
-MIXPANEL_TOKEN = environ['HD_MIXPANEL_TOKEN']
-STRIPE_TOKEN = environ['HD_STRIPE_TOKEN']
-
-def _load_events_for_email(queue):
-    a = Analytics(token=MIXPANEL_TOKEN)
-    email = queue.get()
-    while bool(email):
-        print 'Fetching events for email: {}'.format(email)
-        a.fetch_email(email)
-        email = queue.get()
+from multiprocessing import cpu_count, Pool
 
 class Pipeline(object):
     """Pull data from data sources into MongoDB"""
 
     def __init__(self):
-        self.analytics = Analytics(token=MIXPANEL_TOKEN)
-        self.payment_processor = Payment(token=STRIPE_TOKEN)
+        self.analytics = Analytics(token=environ['HD_MIXPANEL_TOKEN'])
+        self.payment_processor = Payment(token=environ['HD_STRIPE_TOKEN'])
 
         try:
             cpus = cpu_count()
@@ -31,7 +20,7 @@ class Pipeline(object):
         self.cpus = cpus
 
     def run(self):
-        #self.load_users()
+        self.load_users()
         self.load_events()
 
     def load_users(self):
@@ -40,20 +29,11 @@ class Pipeline(object):
         payments.import_customers()
 
     def load_events(self):
-        queue = Queue()
-        processes = self.cpus*2
-        pool = Pool(processes, _load_events_for_email, (queue,))
+        start_date = date.today() - timedelta(days=90)
 
         for email in fetch_user_emails():
-            queue.put(email)
-            print queue.qsize()
+            self.analytics.fetch_email(email, start_date)
 
-        while queue.qsize() > 0:
-            print "Queue Size: {}".format(queue.qsize())
-            sleep(5)
-
-        pool.close()
-        return True
 if __name__ == '__main__':
     pipeline = Pipeline()
     pipeline.run()
