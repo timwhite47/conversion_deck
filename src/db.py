@@ -1,6 +1,8 @@
 import json
 import boto3
 import decimal
+import botocore
+
 from os import environ
 from datetime import date, timedelta
 from decimal import Decimal
@@ -26,7 +28,7 @@ def _sanitize_dynamodb(data):
     elif isinstance(data, set):
         new_data = {_sanitize_dynamodb(item) for item in data}
     elif isinstance(data, (float, int, long, complex)):
-        new_data = Decimal(data)
+        new_data = Decimal(str(data))
     else:
         new_data = data
     return new_data
@@ -57,6 +59,8 @@ def create_event(event):
         return EVENTS_TABLE.put_item(Item=event)
     except KeyboardInterrupt as e:
         raise e
+    except botocore.exceptions.ParamValidationError as e:
+        _print_error(e, event, EVENTS_TABLE)
     # except Exception as e:
     #     _print_error(e, event, EVENTS_TABLE)
 
