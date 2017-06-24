@@ -47,7 +47,6 @@ class Pipeline(object):
         for email in fetch_user_emails():
             queue.put(email)
             print queue.qsize()
-            self.analytics.fetch_email(email)
 
         while queue.qsize() > 0:
             print "Queue Size: {}".format(queue.qsize())
