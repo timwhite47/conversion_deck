@@ -52,17 +52,12 @@ def create_user(stripe_customer):
 def create_event(event):
     event = _parse_event(event)
     event = _sanitize_dynamodb(event)
-    # if not event:
-    #     return
     try:
-        # print "Adding Event: {}".format(event['event_id'])
         return EVENTS_TABLE.put_item(Item=event)
     except KeyboardInterrupt as e:
         raise e
     except botocore.exceptions.ParamValidationError as e:
         _print_error(e, event, EVENTS_TABLE)
-    # except Exception as e:
-    #     _print_error(e, event, EVENTS_TABLE)
 
 def _print_error(e, data, table_name):
     print "Could not store data in {}".format(table_name)
@@ -70,10 +65,19 @@ def _print_error(e, data, table_name):
     print e
     print '='*20
 
+def _parse_event_id(properties):
+    return ':'.join([
+        properties['distinct_id'],
+        properties['time']
+    ])
+
 def _parse_event(entry):
     try:
         event_data = json.loads(entry)
-        event_data['event_id'] = event_data['properties']['distinct_id']
+        properties = event_data['properties']
+        event_data['profile_id'] = properties['distinct_id']
+        event_data['event_id'] = _parse_event_id(properties)
+
         return event_data
     except ValueError as e:
         pass
