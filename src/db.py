@@ -68,7 +68,7 @@ def _print_error(e, data, table_name):
 def _parse_event_id(properties):
     return ':'.join([
         properties['distinct_id'],
-        properties['time']
+        str(properties['time'])
     ])
 
 def _parse_event(entry):
