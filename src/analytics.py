@@ -31,7 +31,7 @@ class Analytics(object):
     def fetch_people(self):
         page=0
         auth = HTTPBasicAuth(self.token, '')
-        session_id = None
+        session_id = ''
         while True:
             print 'Getting page: {}'.format(page)
 
@@ -40,7 +40,6 @@ class Analytics(object):
             data = response.json()
             if data['session_id']:
                 session_id = data['session_id']
-
             [create_profile(profile) for profile in data['results']]
             if data['page_size'] < 1000:
                 break
@@ -73,7 +72,7 @@ class Analytics(object):
 
         return '?'.join([EXPORT_URL, params])
 
-    def _generate_engage_url(self, page=0, session_id=None):
+    def _generate_engage_url(self, page=0, session_id=''):
         params = urlencode({
             'page': page,
             'session_id': session_id
