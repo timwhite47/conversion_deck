@@ -62,6 +62,8 @@ def create_event(event):
         _print_error(e, event, EVENTS_TABLE)
 
 def create_profile(profile):
+    profile = _sanitize_dynamodb(profile)
+    
     try:
         print "Adding Profile: {}".format(profile['$distinct_id'])
         return PROFILES_TABLE.put_item(Item=profile)
