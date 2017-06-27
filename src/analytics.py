@@ -29,15 +29,21 @@ class Analytics(object):
             self._fetch_url(url)
 
     def fetch_people(self):
-        url = self._generate_engage_url(page=0)
-        auth = HTTPBasicAuth(self.token, '')
+        page = 0
 
         while True:
+            print 'Getting page: {}'.format(page)
+
+            url = self._generate_engage_url(page=page)
+            auth = HTTPBasicAuth(self.token, '')
+
             response = requests.get(url, auth=auth)
             data = response.json()
             [create_profile(profile) for profile in data['results']]
             if data['page_size'] < 1000:
                 break
+
+            page += 1
 
         return True
 
