@@ -11,9 +11,11 @@ dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
 
 USER_TABLE_NAME = 'conversion_deck.users'
 EVENT_TABLE_NAME = 'conversion_deck.events'
+PROFILE_TABLE_NAME = 'conversion_deck.profiles'
 
 USER_TABLE = dynamodb.Table(USER_TABLE_NAME)
 EVENTS_TABLE = dynamodb.Table(EVENT_TABLE_NAME)
+PROFILES_TABLE = dynamodb.Table(PROFILE_TABLE_NAME)
 
 def _sanitize_dynamodb(data):
     """ Sanitizes an object so it can be updated to dynamodb (recursive) """
@@ -58,6 +60,15 @@ def create_event(event):
         raise e
     except botocore.exceptions.ParamValidationError as e:
         _print_error(e, event, EVENTS_TABLE)
+
+def create_profile(profile):
+    try:
+        print "Adding Profile: {}".format(profile['$distinct_id'])
+        return PROFILES_TABLE.put_item(Item=profile)
+    except KeyboardInterrupt as e:
+        raise e
+    except botocore.exceptions.ParamValidationError as e:
+        _print_error(e, profile, PROFILES_TABLE)
 
 def _print_error(e, data, table_name):
     print "Could not store data in {}".format(table_name)

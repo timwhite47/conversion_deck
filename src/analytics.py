@@ -9,7 +9,8 @@ from datetime import date, timedelta
 from os import environ
 from requests.auth import HTTPBasicAuth
 
-BASE_URL = 'https://data.mixpanel.com/api/2.0/export'
+EXPORT_URL = 'https://data.mixpanel.com/api/2.0/export'
+ENGAGE_URL = 'https://mixpanel.com/api/2.0/engage'
 
 with open('data/event_names.json') as json_file:
     data = json.load(json_file)
@@ -20,13 +21,25 @@ class Analytics(object):
     def __init__(self, token):
         self.token = token
 
-    def fetch(self, days=30, increment=1):
+    def fetch_events(self, days=30, increment=1):
         for num_days in xrange(1, days + 1):
             end_date = date.today() - timedelta(days=num_days)
             start_date = end_date - timedelta(days=increment)
-            url = self._generate_url(start_date, end_date)
+            url = self._generate_export_url(start_date, end_date)
             self._fetch_url(url)
 
+    def fetch_people(self):
+        url = self._generate_engage_url(page=0)
+        auth = HTTPBasicAuth(self.token, '')
+
+        while True:
+            response = requests.get(url, auth=auth)
+            data = response.json()
+            [create_profile(profile) for profile in data['results']]
+            if data['page_size'] < 1000:
+                break
+
+        return True
 
     def _fetch_url(self, url):
         print "Fetching URL: {}".format(url)
@@ -43,14 +56,18 @@ class Analytics(object):
             print e
             print '='*20
 
-    def _generate_url(self, from_date, to_date):
+    def _generate_export_url(self, from_date, to_date):
         params = urlencode({
             "from_date": str(from_date),
             "to_date": str(to_date),
             "event": json.dumps(EVENT_NAMES)
         })
 
-        return '?'.join([BASE_URL, params])
+        return '?'.join([EXPORT_URL, params])
+
+    def _generate_engage_url(self, page=0):
+        params = urlencode({ 'page': page })
+        return '?'.join([ENGAGE_URL, params])
 
 if __name__ == '__main__':
     a = Analytics()
