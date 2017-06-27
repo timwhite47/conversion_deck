@@ -3,7 +3,7 @@ import json
 import boto3
 import botocore
 import pandas as pd
-from db import create_event
+from db import create_event, create_profile
 from urllib import urlencode
 from datetime import date, timedelta
 from os import environ
