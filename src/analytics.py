@@ -40,9 +40,8 @@ class Analytics(object):
             data = response.json()
             if data['session_id']:
                 session_id = data['session_id']
+
             [create_profile(profile) for profile in data['results']]
-            if data['page_size'] < 1000:
-                break
 
             page += 1
 
