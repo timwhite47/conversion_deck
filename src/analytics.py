@@ -48,7 +48,9 @@ class Analytics(object):
             url = self._generate_engage_url(page, session_id)
             response = self._fetch_url(url)
             data = response.json()
-
+            if 'session_id' in data:
+                session_id = data['session_id']
+            # import ipdb; ipdb.set_trace()
             [create_profile(profile) for profile in data['results']]
 
             page += 1
