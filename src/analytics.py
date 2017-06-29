@@ -35,7 +35,7 @@ class Analytics(object):
             print "Page {} finished, sleeping for 2 minutes"
             sleep(60)
 
-    def fetch_people(self):
+    def fetch_profiles(self):
         page=0
         auth = HTTPBasicAuth(self.token, '')
         session_id = ''
@@ -48,8 +48,6 @@ class Analytics(object):
             url = self._generate_engage_url(page, session_id)
             response = self._fetch_url(url)
             data = response.json()
-            if data['session_id']:
-                session_id = data['session_id']
 
             [create_profile(profile) for profile in data['results']]
 

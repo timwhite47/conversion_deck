@@ -21,11 +21,12 @@ class Pipeline(object):
 
     def run(self):
         # self.load_users()
-        # self.load_events()
         self.load_people()
+        self.load_events()
+
 
     def load_people(self):
-        self.analytics.fetch_people()
+        self.analytics.fetch_profiles()
 
     def load_users(self):
         ''' Load users in to DynamoDB from Stripe'''
