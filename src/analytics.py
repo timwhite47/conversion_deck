@@ -39,8 +39,8 @@ class Analytics(object):
         page=0
         auth = HTTPBasicAuth(self.token, '')
         session_id = ''
-        initial_url = self._generate_engage_url()
-        session_id = self._fetch_url(initial_url).json()['session_id']
+        # initial_url = self._generate_engage_url()
+        # session_id = self._fetch_url(initial_url).json()['session_id']
 
         while True:
             print 'Getting page: {}'.format(page)
@@ -48,6 +48,9 @@ class Analytics(object):
             url = self._generate_engage_url(page, session_id)
             response = self._fetch_url(url)
             data = response.json()
+            if 'error' in data:
+                raise ValueError(data['error'])
+
             if 'session_id' in data:
                 session_id = data['session_id']
             # import ipdb; ipdb.set_trace()
@@ -99,9 +102,9 @@ class Analytics(object):
             'selector': selector
         }
 
-        if len(session_id) == 0:
-            del params['session_id']
-            del params['behaviors']
-            del params['selector']
+        # if len(session_id) == 0:
+        #     del params['session_id']
+        #     del params['behaviors']
+        #     del params['selector']
 
         return '?'.join([ENGAGE_URL, urlencode(params)])
