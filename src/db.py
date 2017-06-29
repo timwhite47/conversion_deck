@@ -6,6 +6,7 @@ import botocore
 from os import environ
 from datetime import date, timedelta
 from decimal import Decimal
+from time import sleep
 
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
 
@@ -35,13 +36,14 @@ def _sanitize_dynamodb(data):
         new_data = data
     return new_data
 
-def fetch_profiles(arg):
+def fetch_profiles():
     response = PROFILES_TABLE.scan()
     data = response['Items']
 
     while 'LastEvaluatedKey' in response:
         response = PROFILES_TABLE.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
         data.extend(response['Items'])
+        sleep(0.25)
 
     return data
 
