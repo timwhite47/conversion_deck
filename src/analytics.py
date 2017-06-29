@@ -3,6 +3,7 @@ import json
 import boto3
 import botocore
 import pandas as pd
+import os
 from time import sleep
 from db import create_event, create_profile
 from urllib import urlencode
@@ -14,7 +15,7 @@ EXPORT_URL = 'https://data.mixpanel.com/api/2.0/export'
 ENGAGE_URL = 'https://mixpanel.com/api/2.0/engage'
 TIMEFRAME_DAYS = 90
 
-with open('data/event_names.json') as json_file:
+with open('/../'.join([os.getcwd(), 'data/event_names.json'])) as json_file:
     data = json.load(json_file)
     EVENT_NAMES = map(lambda obj: obj['Name'], data)
 
