@@ -50,13 +50,13 @@ def fetch_profiles():
 
 def events_for_profile_ids(profile_ids):
     expression = Attr('profile_id').is_in(profile_ids)
-    response = EVENTS_TABLE.query(FilterExpression=expression)
+    response = EVENTS_TABLE.scan(FilterExpression=expression)
     data = response['Items']
 
     while 'LastEvaluatedKey' in response:
         response = EVENTS_TABLE.scan(
             ExclusiveStartKey=response['LastEvaluatedKey'],
-            KeyConditionExpression=expression
+            FilterExpression=expression
         )
         data.extend(response['Items'])
         sleep(0.1)
