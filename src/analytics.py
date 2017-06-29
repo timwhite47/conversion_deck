@@ -102,9 +102,7 @@ class Analytics(object):
             'selector': selector
         }
 
-        # if len(session_id) == 0:
-        #     del params['session_id']
-        #     del params['behaviors']
-        #     del params['selector']
+        if len(session_id) == 0:
+            del params['session_id']
 
         return '?'.join([ENGAGE_URL, urlencode(params)])
