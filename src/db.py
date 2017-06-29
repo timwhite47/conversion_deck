@@ -36,11 +36,11 @@ def _sanitize_dynamodb(data):
     return new_data
 
 def fetch_profiles(arg):
-    response = PROFILE_TABLE_NAME.scan()
+    response = PROFILES_TABLE.scan()
     data = response['Items']
 
     while 'LastEvaluatedKey' in response:
-        response = PROFILE_TABLE_NAME.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        response = PROFILES_TABLE.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
         data.extend(response['Items'])
 
     return data
