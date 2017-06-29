@@ -39,8 +39,8 @@ class Analytics(object):
         page=0
         auth = HTTPBasicAuth(self.token, '')
         session_id = ''
-        # initial_url = self._generate_engage_url()
-        # session_id = self._fetch_url(initial_url).json()['session_id']
+        initial_url = self._generate_engage_url()
+        session_id = self._fetch_url(initial_url).json()['session_id']
 
         while True:
             print 'Getting page: {}'.format(page)
@@ -107,5 +107,12 @@ class Analytics(object):
             del params['selector']
         else:
             del params['session_id']
+            del params['page']
+
+        print "Requesting Profiles with params: \t {}".format(json.dumps(params))
 
         return '?'.join([ENGAGE_URL, urlencode(params)])
+
+if __name__ == '__main__':
+    analytics = Analytics(token=environ['HD_MIXPANEL_TOKEN'])
+    analytics.fetch_profiles()

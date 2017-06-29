@@ -63,9 +63,9 @@ def create_event(event):
 
 def create_profile(profile):
     profile = _sanitize_dynamodb(profile)
-    
+
     try:
-        print "Adding Profile: {}".format(profile['$distinct_id'])
+        # print "Adding Profile: {}".format(profile['$distinct_id'])
         return PROFILES_TABLE.put_item(Item=profile)
     except KeyboardInterrupt as e:
         raise e
