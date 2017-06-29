@@ -35,6 +35,16 @@ def _sanitize_dynamodb(data):
         new_data = data
     return new_data
 
+def fetch_profiles(arg):
+    response = PROFILE_TABLE_NAME.scan()
+    data = response['Items']
+
+    while 'LastEvaluatedKey' in response:
+        response = PROFILE_TABLE_NAME.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        data.extend(response['Items'])
+
+    return data
+
 def fetch_user_emails():
     response = USER_TABLE.scan(Select='SPECIFIC_ATTRIBUTES',AttributesToGet=['email'])
     return [obj['email'] for obj in response['Items']]
