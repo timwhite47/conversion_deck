@@ -3,6 +3,7 @@ import boto3
 import decimal
 import botocore
 
+from boto3.dynamodb.conditions import Key, Attr
 from os import environ
 from datetime import date, timedelta
 from decimal import Decimal
@@ -43,7 +44,22 @@ def fetch_profiles():
     while 'LastEvaluatedKey' in response:
         response = PROFILES_TABLE.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
         data.extend(response['Items'])
-        sleep(0.25)
+        sleep(0.1)
+
+    return data
+
+def events_for_profile_ids(profile_ids):
+    expression = Key('profile_id').is_in(profile_ids)
+    response = EVENTS_TABLE.scan(KeyConditionExpression=expression)
+    data = response['Items']
+
+    while 'LastEvaluatedKey' in response:
+        response = EVENTS_TABLE.scan(
+            ExclusiveStartKey=response['LastEvaluatedKey'],
+            KeyConditionExpression=expression
+        )
+        data.extend(response['Items'])
+        sleep(0.1)
 
     return data
 
