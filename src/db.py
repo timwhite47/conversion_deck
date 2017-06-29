@@ -49,8 +49,8 @@ def fetch_profiles():
     return data
 
 def events_for_profile_ids(profile_ids):
-    expression = Key('profile_id').is_in(profile_ids)
-    response = EVENTS_TABLE.scan(KeyConditionExpression=expression)
+    expression = Attr('profile_id').is_in(profile_ids)
+    response = EVENTS_TABLE.query(FilterExpression=expression)
     data = response['Items']
 
     while 'LastEvaluatedKey' in response:
