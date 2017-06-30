@@ -56,8 +56,10 @@ class Analytics(object):
                 session_id = data['session_id']
             # import ipdb; ipdb.set_trace()
             [create_profile(profile) for profile in data['results']]
-
-            page += 1
+            if len(data['results']) == 1000:
+                page += 1
+            else:
+                break
 
         return True
 
