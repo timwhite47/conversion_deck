@@ -47,6 +47,7 @@ class Pipeline(object):
         payments.import_customers()
 
         import_sql_customers(cursor)
+        self.connection.commit()
 
     def load_events(self):
         cursor = self.connection.cursor()
