@@ -7,13 +7,20 @@ from analytics import Analytics
 from datetime import date, timedelta
 from multiprocessing import cpu_count, Pool
 
+STRIPE_TOKEN = environ['HD_STRIPE_TOKEN']
+MIXPANEL_TOKEN = environ['HD_MIXPANEL_TOKEN']
+PSQL_HOST = environ['CD_PSQL_HOST']
+PSQL_PW = environ['CD_PSQL_PASSWORD']
+PSQL_USER = environ['CD_PSQL_USERNAME']
+PSQL_DB = environ['CD_PSQL_DB']
+
 class Pipeline(object):
     """Pull data from data sources into MongoDB"""
 
     def __init__(self):
-        self.connection = psycopg2.connect(dbname='conversion_deck', host='localhost')
-        self.analytics = Analytics(token=environ['HD_MIXPANEL_TOKEN'])
-        self.payment_processor = Payment(token=environ['HD_STRIPE_TOKEN'])
+        self.connection = psycopg2.connect(dbname=PSQL_DB, host=PSQL_HOST, user=PSQL_USER, password=PSQL_PW)
+        self.analytics = Analytics(token=MIXPANEL_TOKEN)
+        self.payment_processor = Payment(token=STRIPE_TOKEN)
 
         try:
             cpus = cpu_count()
