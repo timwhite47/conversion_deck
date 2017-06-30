@@ -52,7 +52,7 @@ def import_sql_profiles(cursor):
 def import_sql_events(cursor):
     for event in fetch_events():
         try:
-            insert_sql_event(event)
+            insert_sql_event(cursor, event)
         except IntegrityError as e:
             # Duplicate key error
             pass
@@ -103,24 +103,6 @@ def insert_sql_event(cur, event):
     insert_statement = 'insert into events (%s) values %s'
 
     return cur.execute(insert_statement, (AsIs(','.join(columns)), tuple(values)))
-
-def format_sql_profile(profile):
-    data = profile['Item']
-    properties = data['$properties']
-
-    return {
-        "distinct_id": data['$distinct_id'],
-        "camp_count": len(properties['$campaigns']),
-        "camp_deliveries": len(properties['$deliveries']),
-        "email": properties['$email'],
-        "first_name": properties['$first_name'],
-        "last_name": properties['$last_name'],
-        "is_paying": properties['isPaying'],
-        'is_registered': properties['isRegistered'],
-        'signup_at': parser.parse(properties['signupDate']),
-        'vertical': properties['vertical'],
-        'subscription_type': properties['subscriptionType']
-    }
 
 def insert_sql_profile(cursor, profile):
     data = format_sql_profile(profile)
@@ -206,9 +188,6 @@ def format_sql_profile(profile):
         'vertical': vertical,
         'subscription_type': subscription_type,
     }
-
-def format_sql_event(arg):
-    pass
 
 def events_for_profile_ids(profile_ids):
     expression = Attr('profile_id').is_in(profile_ids)
