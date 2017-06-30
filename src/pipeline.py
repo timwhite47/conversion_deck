@@ -42,9 +42,11 @@ class Pipeline(object):
     def load_customers(self):
         ''' Load users in to DynamoDB from Stripe'''
         print "Loading Users"
+        cursor = self.connection.cursor()
         payments = self.payment_processor
         payments.import_customers()
-        import_sql_customers()
+
+        import_sql_customers(cursor)
 
     def load_events(self):
         cursor = self.connection.cursor()
