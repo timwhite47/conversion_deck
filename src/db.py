@@ -2,6 +2,7 @@ import json
 import boto3
 import decimal
 import botocore
+import psycopg2
 
 from collections import defaultdict
 from boto3.dynamodb.conditions import Key, Attr
@@ -14,6 +15,11 @@ from psycopg2.extensions import AsIs
 from dateutil import parser
 
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+
+PSQL_HOST = environ['CD_PSQL_HOST']
+PSQL_PW = environ['CD_PSQL_PASSWORD']
+PSQL_USER = environ['CD_PSQL_USERNAME']
+PSQL_DB = environ['CD_PSQL_DB']
 
 USER_TABLE_NAME = 'conversion_deck.users'
 EVENT_TABLE_NAME = 'conversion_deck.events'
@@ -40,6 +46,14 @@ def _sanitize_dynamodb(data):
     else:
         new_data = data
     return new_data
+
+def psql_connection():
+    return psycopg2.connect(
+        dbname=PSQL_DB,
+        host=PSQL_HOST,
+        user=PSQL_USER,
+        password=PSQL_PW
+    )
 
 def import_sql_profiles(cursor):
     for profile in fetch_profiles():
