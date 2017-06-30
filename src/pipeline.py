@@ -1,7 +1,7 @@
 import psycopg2
 
 from os import environ
-from db import import_sql_profiles, import_sql_events, psql_connection
+from db import import_sql_profiles, import_sql_events, psql_connection, import_sql_customers
 from payments import Payment
 from analytics import Analytics
 from datetime import date, timedelta
@@ -26,7 +26,7 @@ class Pipeline(object):
         self.cpus = cpus
 
     def run(self):
-        # self.load_users()
+        self.load_customers()
         self.load_profiles()
         self.load_events()
 
@@ -39,11 +39,12 @@ class Pipeline(object):
         import_sql_profiles(cursor)
         self.connection.commit()
 
-    def load_users(self):
+    def load_customers(self):
         ''' Load users in to DynamoDB from Stripe'''
         print "Loading Users"
         payments = self.payment_processor
         payments.import_customers()
+        import_sql_customers()
 
     def load_events(self):
         cursor = self.connection.cursor()

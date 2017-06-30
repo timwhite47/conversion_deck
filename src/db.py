@@ -55,6 +55,10 @@ def psql_connection():
         password=PSQL_PW
     )
 
+def import_sql_customers(cursor):
+    for customer in fetch_customers():
+        insert_sql_customer(cursor, customer)
+
 def import_sql_profiles(cursor):
     for profile in fetch_profiles():
         try:
@@ -71,6 +75,18 @@ def import_sql_events(cursor):
             # Duplicate key error
             pass
 
+def fetch_customers():
+    response = USER_TABLE.scan()
+    for customer in response['Items']:
+        yield customer
+
+    while 'LastEvaluatedKey' in response:
+        response = EVENTS_TABLE.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+
+        for customer in response['Items']:
+            yield customer
+
+        sleep(0.1)
 def fetch_events():
     response = EVENTS_TABLE.scan()
     for event in response['Items']:
@@ -97,6 +113,44 @@ def fetch_profiles():
 
         sleep(0.1)
 
+def format_sql_customer(obj):
+    customer = {
+        "identifier": obj['id'],
+        "email": obj['email'],
+        "delinquent": obj['delinquent'],
+        "created_at": datetime.fromtimestamp(obj['created'])
+    }
+
+    subscription = None
+    plan = None
+
+
+    # Setup Subscription used by user
+    if len(obj['subscriptions']['data']):
+        s = obj['subscriptions']['data'][0]
+        subscription = {
+            "identifier": s['id'],
+            "plan_id": s['plan']['id'],
+            "customer_id": s['customer']
+        }
+
+    # Setup plan user is on
+    if subscription:
+        p = s['plan']
+        plan = {
+            "identifier": p['id'],
+            "amount": p['amount'],
+            "interval": p['interval']
+        }
+
+    if len(obj['sources']['data']):
+        c = obj['sources']['data'][0]
+        card = {
+            "identifier":c['id'],
+            "customer_id":c['customer']
+        }
+
+    return customer, subscription, plan
 def format_sql_event(event):
     ts = None
 
@@ -109,6 +163,25 @@ def format_sql_event(event):
         'distinct_id': event['profile_id'],
         'time': ts
     }
+
+def insert_sql_customer(cur, customer):
+    tables = ['customers', 'subscriptions', 'plans', 'card']
+    data = format_sql_customer(customer)
+    objs = zip(tables, data)
+
+    for table, data in objs:
+        if data:
+            print "Inserting to table {}".format(table)
+
+            columns = data.keys()
+            values = [data[column] for column in columns]
+            insert_statement = 'insert into {} (%s) values %s'.format(table)
+
+            try:
+                cur.execute(insert_statement, (AsIs(','.join(columns)), tuple(values)))
+            except IntegrityError as e:
+                print "Attempted duplication in {}".format(table)
+
 
 def insert_sql_event(cur, event):
     data = format_sql_event(event)
@@ -152,6 +225,35 @@ def create_sql_tables(cursor):
         );
 
         CREATE UNIQUE INDEX event_id_idx ON events (event_id);
+
+        CREATE TABLE customers (
+            identifier varchar(255),
+            email varchar(255),
+            delinquent boolean,
+            identifier varchar(255),
+            created_at timestamp
+        );
+
+        CREATE UNIQUE INDEX customer_email_idx ON customers (email);
+
+        CREATE TABLE subscriptions (
+            plan_id varchar(255),
+            customer_id varchar(255),
+            identifier varchar(255)
+        )
+
+        CREATE UNIQUE INDEX subscription_identifier_idx ON subscriptions (identifier);
+
+        CREATE TABLE cards (
+            identifier varchar(255),
+            customer_id varchar(255)
+        )
+
+        CREATE TABLE plans (
+            identifier varchar(255),
+            amount int,
+            interval varchar(255)
+        )
     '''
 
     return cursor.execute(query)

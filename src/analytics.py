@@ -4,6 +4,7 @@ import boto3
 import botocore
 import pandas as pd
 import os
+
 from time import sleep
 from db import create_event, create_profile
 from urllib import urlencode
