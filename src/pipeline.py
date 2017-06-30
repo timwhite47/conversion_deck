@@ -1,7 +1,7 @@
 import psycopg2
 
 from os import environ
-from db import fetch_user_emails, import_sql_profiles, import_sql_events
+from db import import_sql_profiles, import_sql_events
 from payments import Payment
 from analytics import Analytics
 from datetime import date, timedelta
@@ -36,6 +36,7 @@ class Pipeline(object):
 
 
     def load_profiles(self):
+        print "Loading Profiles"
         cursor = self.connection.cursor()
 
         self.analytics.fetch_profiles()
@@ -44,6 +45,7 @@ class Pipeline(object):
 
     def load_users(self):
         ''' Load users in to DynamoDB from Stripe'''
+        print "Loading Users"
         payments = self.payment_processor
         payments.import_customers()
 
@@ -55,5 +57,6 @@ class Pipeline(object):
         self.connection.commit()
 
 if __name__ == '__main__':
+    print 'Strarting Pipeline'
     pipeline = Pipeline()
     pipeline.run()
