@@ -33,7 +33,7 @@ class Analytics(object):
             self._export_events(url)
 
             # Be a nice API citizen, sleep for 1 minute
-            print "Page {} finished, sleeping for 2 minutes"
+            print "{} finished, sleeping for 1 minute".format(str(start_date))
             sleep(60)
 
     def fetch_profiles(self):
@@ -69,9 +69,13 @@ class Analytics(object):
 
     def _export_events(self, url):
         response = self._fetch_url(url, stream=True)
-
+        count = 0
         try:
             for line in response.iter_lines():
+                count += 1
+                if count % 1000 == 0:
+                    print "{} entries exported".format(count)
+
                 if line:
                     event_data = line.decode('utf-8')
                     create_event(event_data)
