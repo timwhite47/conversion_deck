@@ -179,7 +179,7 @@ def insert_sql_customer(cur, customer):
 
             try:
                 cur.execute(insert_statement, (AsIs(','.join(columns)), tuple(values)))
-            except IntegrityError as e:
+            except psycopg2.IntegrityError as e:
                 print "Attempted duplication in {}".format(table)
 
 
@@ -249,11 +249,15 @@ def create_sql_tables(cursor):
             customer_id varchar(255)
         )
 
+        CREATE UNIQUE INDEX card_identifier_idx ON cards (identifier);
+
         CREATE TABLE plans (
             identifier varchar(255),
             amount int,
             interval varchar(255)
         )
+
+        CREATE UNIQUE INDEX plan_identifier_idx ON plans (identifier);
     '''
 
     return cursor.execute(query)
