@@ -81,7 +81,7 @@ def fetch_customers():
         yield customer
 
     while 'LastEvaluatedKey' in response:
-        response = EVENTS_TABLE.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        response = USER_TABLE.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
 
         for customer in response['Items']:
             yield customer
