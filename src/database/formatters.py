@@ -58,7 +58,7 @@ def format_sql_payment_event(payment_event):
 
     return {
         "identifier": payment_event['id'],
-        "customer_id": payment_event['data']['object']['customer'],
+        "customer_id": customer_id,
         "type": payment_event['type'],
         "time": datetime.fromtimestamp(payment_event['created'])
     }
