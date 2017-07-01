@@ -181,10 +181,11 @@ def insert_sql_customer(connection, customer):
 
             try:
                 cur.execute(insert_statement, (AsIs(','.join(columns)), tuple(values)))
+                connection.commit()
             except psycopg2.IntegrityError as e:
                 connection.rollback()
-                cur = connection.cursor()
                 print "Attempted duplication in {}".format(table)
+
 
 
 def insert_sql_event(cur, event):
