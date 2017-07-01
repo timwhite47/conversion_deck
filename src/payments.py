@@ -1,6 +1,6 @@
 import stripe
+from datetime import timedelta, datetime
 from os import environ
-from db import create_user
 
 class Payment(object):
     """docstring for Payment."""
@@ -13,13 +13,12 @@ class Payment(object):
         for customer in customers.auto_paging_iter():
             yield customer
 
-    def import_customers(self):
-        for customer in self.customers():
-            create_user(customer)
+    def events(self, timeframe_days=90):
+        today = datetime.today()
+        end_date = today - timedelta(days=timeframe_days)
+        timeframe = int(end_date.strftime("%s"))
 
+        events = stripe.Event.list(api_key=self.token, created={"gt": timeframe})
 
-if __name__ == '__main__':
-    token = environ['HD_STRIPE_TOKEN']
-    p = Payment(token)
-    for user in p.users(limit=10):
-        print user
+        for event in events.auto_paging_iter():
+            yield event

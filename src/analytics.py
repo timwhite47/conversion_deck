@@ -6,7 +6,7 @@ import pandas as pd
 import os
 
 from time import sleep
-from db import create_event, create_profile
+from database.dynamodb import create_event, create_profile
 from urllib import urlencode
 from datetime import date, timedelta
 from os import environ
@@ -25,19 +25,34 @@ class Analytics(object):
     def __init__(self, token):
         self.token = token
 
-    def fetch_events(self, days=TIMEFRAME_DAYS, increment=1):
+    def events(self, days=TIMEFRAME_DAYS, increment=1):
         for num_days in xrange(1, days + 1):
             end_date = date.today() - timedelta(days=num_days)
             start_date = end_date - timedelta(days=increment)
             url = self._generate_export_url(start_date, end_date)
+
             print "Fetching for {}".format(str(start_date))
-            self._export_events(url)
+            response = self._fetch_url(url, stream=True)
+            count = 0
+            try:
+                for line in response.iter_lines():
+                    count += 1
+                    if count % 1000 == 0:
+                        print "{} entries exported".format(count)
+
+                    if line:
+                        event_data = line.decode('utf-8')
+                        yield event_data
+            except requests.exceptions.ChunkedEncodingError as e:
+                print "IncompleteRead"
+                print e
+                print '='*20
 
             # Be a nice API citizen, sleep for 1 minute
             print "{} finished, sleeping for 1 minute".format(str(start_date))
             sleep(60)
 
-    def fetch_profiles(self):
+    def profiles(self):
         page=0
         auth = HTTPBasicAuth(self.token, '')
         session_id = ''
@@ -55,35 +70,17 @@ class Analytics(object):
 
             if 'session_id' in data:
                 session_id = data['session_id']
-            # import ipdb; ipdb.set_trace()
-            [create_profile(profile) for profile in data['results']]
+            for profile in data['results']:
+                yield profile
+
             if len(data['results']) == 1000:
                 page += 1
             else:
                 break
 
-        return True
-
     def _fetch_url(self, url, stream=False):
         auth = HTTPBasicAuth(self.token, '')
         return requests.get(url, auth=auth, stream=stream)
-
-    def _export_events(self, url):
-        response = self._fetch_url(url, stream=True)
-        count = 0
-        try:
-            for line in response.iter_lines():
-                count += 1
-                if count % 1000 == 0:
-                    print "{} entries exported".format(count)
-
-                if line:
-                    event_data = line.decode('utf-8')
-                    create_event(event_data)
-        except requests.exceptions.ChunkedEncodingError as e:
-            print "IncompleteRead"
-            print e
-            print '='*20
 
     def _generate_export_url(self, from_date, to_date):
         params = urlencode({

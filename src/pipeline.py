@@ -1,7 +1,8 @@
 import psycopg2
 
 from os import environ
-from db import import_sql_profiles, import_sql_events, psql_connection, import_sql_customers
+from database.dynamodb import *
+from database.sql import *
 from payments import Payment
 from analytics import Analytics
 from datetime import date, timedelta
@@ -26,31 +27,36 @@ class Pipeline(object):
         self.cpus = cpus
 
     def run(self):
-        self.load_customers()
-        self.load_profiles()
-        self.load_events()
+        self.import_datasources()
+        self.import_sql()
 
-    def load_profiles(self):
-        print "Loading Profiles"
-
-        self.analytics.fetch_profiles()
-        import_sql_profiles(self.connection)
-        self.connection.commit()
-
-    def load_customers(self):
-        ''' Load users in to DynamoDB from Stripe'''
-        print "Loading Users"
-
+    def import_datasources(self):
         payments = self.payment_processor
-        payments.import_customers()
+        analytics = self.analytics
 
+        # Import Payment Events into DynamoDB
+        for payment_event in payments.events():
+            create_payment_event(payment_event)
+
+        # Import Customers into DynamoDB
+        for customer in payments.customers():
+            create_customer(customer)
+
+        # Import Mixpanel Events into DynamoDB
+        for event in analytics.events():
+            create_event(event)
+
+        # Import Mixpanel Profiles into DynamoDB
+        for profile in analytics.profiles():
+            create_profile(profile)
+
+    def import_sql(self):
+        # Load data from DynamoDB into PostgresSQL
+        import_sql_payment_events(self.connection)
         import_sql_customers(self.connection)
-        self.connection.commit()
-
-    def load_events(self):
-        self.analytics.fetch_events()
+        import_sql_profiles(self.connection)
         import_sql_events(self.connection)
-        self.connection.commit()
+
 
 if __name__ == '__main__':
     print 'Strarting Pipeline'
