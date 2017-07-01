@@ -59,21 +59,24 @@ def import_sql_customers(connection):
     for customer in fetch_customers():
         insert_sql_customer(connection, customer)
 
-def import_sql_profiles(cursor):
+def import_sql_profiles(connection):
     for profile in fetch_profiles():
         try:
+            cursor = connection.cursor()
             insert_sql_profile(cursor, profile)
         except (IntegrityError, psycopg2.IntegrityError):
-            # Duplicate key error
-            pass
+            connection.rollback()
+            print "Attempted duplication in profiles"
 
-def import_sql_events(cursor):
+def import_sql_events(connection):
     for event in fetch_events():
         try:
+            cursor = connection.cursor()
             insert_sql_event(cursor, event)
-        except IntegrityError as e:
+        except (IntegrityError, psycopg2.IntegrityError) as e:
             # Duplicate key error
-            pass
+            connection.rollback()
+            print "Attempted duplication in profiles"
 
 def fetch_customers():
     response = USER_TABLE.scan()

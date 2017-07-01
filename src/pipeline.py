@@ -32,16 +32,15 @@ class Pipeline(object):
 
     def load_profiles(self):
         print "Loading Profiles"
-        cursor = self.connection.cursor()
 
         self.analytics.fetch_profiles()
-        import_sql_profiles(cursor)
+        import_sql_profiles(self.connection)
         self.connection.commit()
 
     def load_customers(self):
         ''' Load users in to DynamoDB from Stripe'''
         print "Loading Users"
-        cursor = self.connection.cursor()
+
         payments = self.payment_processor
         payments.import_customers()
 
@@ -49,10 +48,8 @@ class Pipeline(object):
         self.connection.commit()
 
     def load_events(self):
-        cursor = self.connection.cursor()
-
         self.analytics.fetch_events()
-        import_sql_events(cursor)
+        import_sql_events(self.connection)
         self.connection.commit()
 
 if __name__ == '__main__':
