@@ -51,6 +51,11 @@ def format_sql_event(event):
         'time': ts
     }
 def format_sql_payment_event(payment_event):
+    customer_id = None
+
+    if 'customer' in payment_event['data']['object']:
+        customer_id = payment_event['data']['object']['customer']
+
     return {
         "identifier": payment_event['id'],
         "customer_id": payment_event['data']['object']['customer'],
