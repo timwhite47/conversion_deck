@@ -30,7 +30,6 @@ class Pipeline(object):
         self.load_profiles()
         self.load_events()
 
-
     def load_profiles(self):
         print "Loading Profiles"
         cursor = self.connection.cursor()
@@ -46,7 +45,7 @@ class Pipeline(object):
         payments = self.payment_processor
         payments.import_customers()
 
-        import_sql_customers(cursor)
+        import_sql_customers(self.connection)
         self.connection.commit()
 
     def load_events(self):

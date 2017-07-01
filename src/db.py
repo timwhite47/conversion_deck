@@ -55,9 +55,9 @@ def psql_connection():
         password=PSQL_PW
     )
 
-def import_sql_customers(cursor):
+def import_sql_customers(connection):
     for customer in fetch_customers():
-        insert_sql_customer(cursor, customer)
+        insert_sql_customer(connection, customer)
 
 def import_sql_profiles(cursor):
     for profile in fetch_profiles():
@@ -164,12 +164,14 @@ def format_sql_event(event):
         'time': ts
     }
 
-def insert_sql_customer(cur, customer):
+def insert_sql_customer(connection, customer):
     tables = ['customers', 'subscriptions', 'plans', 'card']
     data = format_sql_customer(customer)
     objs = zip(tables, data)
 
     for table, data in objs:
+        cur = connection.cursor()
+
         if data:
             print "Inserting to table {}".format(table)
 
@@ -180,6 +182,8 @@ def insert_sql_customer(cur, customer):
             try:
                 cur.execute(insert_statement, (AsIs(','.join(columns)), tuple(values)))
             except psycopg2.IntegrityError as e:
+                connection.rollback()
+                cur = connection.cursor()
                 print "Attempted duplication in {}".format(table)
 
 
