@@ -63,7 +63,7 @@ def import_sql_profiles(cursor):
     for profile in fetch_profiles():
         try:
             insert_sql_profile(cursor, profile)
-        except IntegrityError:
+        except (IntegrityError, psycopg2.IntegrityError):
             # Duplicate key error
             pass
 
