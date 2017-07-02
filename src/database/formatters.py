@@ -1,4 +1,5 @@
 from datetime import datetime
+from collections import defaultdict
 
 def format_sql_customer(obj):
     customer = {
