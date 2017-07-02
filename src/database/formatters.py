@@ -1,5 +1,6 @@
 from datetime import datetime
 from collections import defaultdict
+from dateutil import parser
 
 def format_sql_customer(obj):
     customer = {
