@@ -17,25 +17,28 @@ TIMEFRAME_OFFSET = 90
 
 def work_queue(queue):
     print "Process started"
-    
-    while True:
-        try:
-            job_type, data = queue.get()
 
-            print "{}: \t Processing Job ({})".format(time.time(), job_type)
-            if job_type == 'payment_event':
-                create_payment_event(data)
-            elif job_type == 'customer':
-                create_customer(data)
-            elif job_type == 'event':
-                create_event(data)
-            elif job_type == 'profile':
-                create_profile(profile)
-        except KeyboardInterrupt as e:
-            break
-        except Exception as e:
-            print e
+    while True:
+        job = queue.get()
+
+        if not job:
+            print "No job in queue"
+            time.sleep(1)
             pass
+
+        job_type, job_data = job
+        data = json.loads(job_data)
+
+        print "{}: \t Processing Job ({})".format(time.time(), job_type)
+        if job_type == 'payment_event':
+            create_payment_event(data)
+        elif job_type == 'customer':
+            create_customer(data)
+        elif job_type == 'event':
+            create_event(data)
+        elif job_type == 'profile':
+            create_profile(profile)
+
 class Pipeline(object):
     """Pull data from data sources into MongoDB"""
 
@@ -60,8 +63,14 @@ class Pipeline(object):
             self.processes.append(p)
 
     def run(self):
-        self.import_datasources()
-        self.import_sql()
+        try:
+            self.import_datasources()
+            self.import_sql()
+        except KeyboardInterrupt as e:
+            for p in self.processes:
+                print "Killing Process {}".format(p.pid)
+                p.terminate()
+
 
     def import_datasources(self):
         payments = self.payment_processor
@@ -69,19 +78,19 @@ class Pipeline(object):
 
         # Import Payment Events into DynamoDB
         for payment_event in payments.events(timeframe_days=TIMEFRAME_DAYS, offset=TIMEFRAME_OFFSET):
-            self.queue.put(('payment_event', payment_event))
+            self._add_to_queue('payment_event', json.loads(str(payment_event)))
 
         # Import Customers into DynamoDB
         for customer in payments.customers():
-            self.queue.put(('customer', customer))
+            self._add_to_queue('customer', json.loads(str(customer)))
 
         # Import Mixpanel Events into DynamoDB
         for event in analytics.events(days=TIMEFRAME_DAYS, offset=TIMEFRAME_OFFSET):
-            self.queue.put(('event', event))
+            self._add_to_queue('event', event)
 
         # Import Mixpanel Profiles into DynamoDB
         for profile in analytics.profiles():
-            self.queue.put(('profile', profile))
+            self._add_to_queue('profile', profile)
 
         while not self.queue.empty():
             sleep(1)
@@ -100,6 +109,8 @@ class Pipeline(object):
         print "{} \t Importing Events to SQL".format(time.time())
         import_sql_events(self.connection)
 
+    def _add_to_queue(self, job_type, data):
+        self.queue.put((job_type, json.dumps(data)))
 
 if __name__ == '__main__':
     print 'Strarting Pipeline'

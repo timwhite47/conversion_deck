@@ -30,7 +30,6 @@ def fetch_payment_events():
     return _fetch_from_table(PAYMENT_EVENT_TABLE)
 
 def create_payment_event(payment_event):
-    payment_event = json.loads(str(payment_event))
     payment_event['event_id'] = payment_event['id']
     payment_event = _sanitize_dynamodb(payment_event)
 
@@ -47,8 +46,7 @@ def create_profile(profile):
 
     return _create_object(PROFILES_TABLE, profile)
 
-def create_customer(stripe_customer):
-    customer = json.loads(str(stripe_customer))
+def create_customer(customer):
     customer = _sanitize_dynamodb(customer)
 
     return _create_object(CUSTOMERS_TABLE, customer)
