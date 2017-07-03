@@ -71,7 +71,7 @@ def _create_object(table, item):
     except KeyboardInterrupt as e:
         raise e
     except botocore.exceptions.ParamValidationError as e:
-        print "Could not store data in {}".format(table_name)
+        print "Could not store data"
         print data
         print e
         print '='*20
