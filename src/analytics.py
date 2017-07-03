@@ -30,16 +30,10 @@ class Analytics(object):
             end_date = date.today() - timedelta(days=num_days)
             start_date = end_date - timedelta(days=increment)
             url = self._generate_export_url(start_date, end_date)
-
-            print "Fetching for {}".format(str(start_date))
             response = self._fetch_url(url, stream=True)
-            count = 0
+
             try:
                 for line in response.iter_lines():
-                    count += 1
-                    if count % 1000 == 0:
-                        print "{} entries exported".format(count)
-
                     if line:
                         event_data = line.decode('utf-8')
                         yield event_data
@@ -113,9 +107,6 @@ class Analytics(object):
         else:
             del params['session_id']
             del params['page']
-
-        print "Requesting Profiles with params: \t {}".format(json.dumps(params))
-
         return '?'.join([ENGAGE_URL, urlencode(params)])
 
 if __name__ == '__main__':

@@ -53,8 +53,6 @@ def insert_sql_customer(connection, customer):
         cur = connection.cursor()
 
         if data:
-            print "Inserting to table {}".format(table)
-
             columns = data.keys()
             values = [data[column] for column in columns]
             insert_statement = 'insert into {} (%s) values %s'.format(table)
