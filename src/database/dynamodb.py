@@ -72,7 +72,7 @@ def _create_object(table, item):
         raise e
     except botocore.exceptions.ParamValidationError as e:
         print "Could not store data"
-        print data
+        print item
         print e
         print '='*20
 

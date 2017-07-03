@@ -37,7 +37,7 @@ def work_queue(queue):
         elif job_type == 'event':
             create_event(data)
         elif job_type == 'profile':
-            create_profile(profile)
+            create_profile(data)
 
 class Pipeline(object):
     """Pull data from data sources into MongoDB"""
