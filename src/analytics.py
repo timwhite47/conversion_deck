@@ -25,8 +25,8 @@ class Analytics(object):
     def __init__(self, token):
         self.token = token
 
-    def events(self, days=TIMEFRAME_DAYS, increment=1):
-        for num_days in xrange(1, days + 1):
+    def events(self, days=TIMEFRAME_DAYS, increment=1, offset=1):
+        for num_days in xrange(offset, (days + offset)):
             end_date = date.today() - timedelta(days=num_days)
             start_date = end_date - timedelta(days=increment)
             url = self._generate_export_url(start_date, end_date)

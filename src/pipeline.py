@@ -11,6 +11,9 @@ from multiprocessing import cpu_count, Pool
 STRIPE_TOKEN = environ['HD_STRIPE_TOKEN']
 MIXPANEL_TOKEN = environ['HD_MIXPANEL_TOKEN']
 
+TIMEFRAME_DAYS = 180
+TIMEFRAME_OFFSET = 90
+
 class Pipeline(object):
     """Pull data from data sources into MongoDB"""
 
@@ -35,7 +38,7 @@ class Pipeline(object):
         analytics = self.analytics
 
         # Import Payment Events into DynamoDB
-        for payment_event in payments.events():
+        for payment_event in payments.events(timeframe_days=TIMEFRAME_DAYS, offset=TIMEFRAME_OFFSET):
             create_payment_event(payment_event)
 
         # Import Customers into DynamoDB
@@ -43,7 +46,7 @@ class Pipeline(object):
             create_customer(customer)
 
         # Import Mixpanel Events into DynamoDB
-        for event in analytics.events():
+        for event in analytics.events(days=TIMEFRAME_DAYS, offset=TIMEFRAME_OFFSET):
             create_event(event)
 
         # Import Mixpanel Profiles into DynamoDB
