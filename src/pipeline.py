@@ -17,19 +17,25 @@ TIMEFRAME_OFFSET = 90
 
 def work_queue(queue):
     print "Process started"
+    
     while True:
-        job_type, data = queue.get()
+        try:
+            job_type, data = queue.get()
 
-        print "{}: \t Processing Job ({})".format(time.time(), job_type)
-        if job_type == 'payment_event':
-            create_payment_event(data)
-        elif job_type == 'customer':
-            create_customer(data)
-        elif job_type == 'event':
-            create_event(data)
-        elif job_type == 'profile':
-            create_profile(profile)
-
+            print "{}: \t Processing Job ({})".format(time.time(), job_type)
+            if job_type == 'payment_event':
+                create_payment_event(data)
+            elif job_type == 'customer':
+                create_customer(data)
+            elif job_type == 'event':
+                create_event(data)
+            elif job_type == 'profile':
+                create_profile(profile)
+        except KeyboardInterrupt as e:
+            break
+        except Exception as e:
+            print e
+            pass
 class Pipeline(object):
     """Pull data from data sources into MongoDB"""
 
