@@ -16,9 +16,12 @@ class Payment(object):
     def events(self, timeframe_days=90, offset=0):
         start_date = datetime.today() - timedelta(days=offset)
         end_date = start_date - timedelta(days=timeframe_days)
-        timeframe = int(end_date.strftime("%s"))
+        end_date = int(end_date.strftime("%s"))
 
-        events = stripe.Event.list(api_key=self.token, created={"gt": timeframe})
+        events = stripe.Event.list(api_key=self.token, created={
+            "gt": end_date,
+            "lt": start_date
+        })
 
         for event in events.auto_paging_iter():
             yield event
