@@ -77,14 +77,13 @@ class ConversionClassifier(object):
         self.df = self.raw_df
 
         # Set Vertical Dummies
-        vertical_dummies = pd.get_dummies(self.df['vertical'], prefix='vertical')
-        self.df = self.df.join(vertical_dummies)
+        # vertical_dummies = pd.get_dummies(self.df['vertical'], prefix='vertical')
+        # self.df = self.df.join(vertical_dummies)
 
         # Set Train/Test Data
+        self.X = self.df[FEATURE_COLUMNS]
         self.y = self.df[LABEL_COLUMN]
-        self.df.drop([LABEL_COLUMN, 'vertical'], axis=1, inplace=True)
-
-        self.X = self.df
+        # self.df.drop([LABEL_COLUMN, 'vertical'], axis=1, inplace=True)
 
         (
             self._X_train,
