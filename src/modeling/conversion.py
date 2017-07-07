@@ -103,10 +103,12 @@ class ConversionClassifier(object):
         self.X = self.df[FEATURE_COLUMNS].join(vertical_dummies)
         self.y = self.df[LABEL_COLUMN]
 
-        self._X_train,
+        (
+            self._X_train,
             self._X_test,
             self._y_train,
-            self._y_test = train_test_split(self.X.values, self.y.values)
+            self._y_test
+        ) = train_test_split(self.X.values, self.y.values)
 
     def fit(self):
         return self._clf.fit(self._X_train, self._y_train)
