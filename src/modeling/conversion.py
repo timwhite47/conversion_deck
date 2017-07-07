@@ -18,10 +18,14 @@ from sklearn.utils import shuffle
 MODEL_FILEPATH = 'data/conversion_model.pkl'
 FEATURE_COLUMNS = [
     'App Became Active',
+    'Countdown Pro Button',
     'Deck Created',
     'Display Limit Modal',
     'Display Limit Notification',
-    'Display Welcome Countdown',
+    'Display Video Editor Modal',
+    'Display Zuru Upgrade Modal',
+    'Download PPTX',
+    'Downloaded Video',
     'Editor Opened',
     'Ended Onboarding',
     'Export',
@@ -31,6 +35,7 @@ FEATURE_COLUMNS = [
     'Land on Education Page',
     'Land on Homepage',
     'Land on Pricing Page',
+    'Land on Realtor Page',
     'Land on Zuru Page',
     'Limit Button',
     'Limit Modal Edu Button',
@@ -42,11 +47,13 @@ FEATURE_COLUMNS = [
     'Set Privacy Restricted',
     'Share',
     'Sign In',
-    'Sign Up',
     'Slide start',
     'Start',
     'Started Onboarding',
+    # 'Validation failed',
     'View player page',
+    'Zuru Upgrade Edu Button',
+    'Zuru Upgrade Pro Button',
     'signin',
 ]
 
