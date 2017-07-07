@@ -82,10 +82,10 @@ class ConversionClassifier(object):
 
         self.connection = connection
         self._clf = GradientBoostingClassifier(
-            # learning_rate=0.001,
-            # n_estimators=5000,
+            learning_rate=0.001,
+            n_estimators=5000,
             verbose=100,
-            # max_depth=5
+            max_depth=5
         )
 
     def load_dataset(self):
@@ -98,13 +98,15 @@ class ConversionClassifier(object):
 
         # Set Vertical Dummies
         vertical_dummies = pd.get_dummies(self.df['vertical'], prefix='vertical')
-        self.df = self.df.join(vertical_dummies)
-        self.df.drop('vertical', axis=1, inplace=True)
 
         # Set Train/Test Data
-        self.X = self.df[FEATURE_COLUMNS].values
-        self.y = self.df[LABEL_COLUMN].values
-        self._X_train, self._X_test, self._y_train, self._y_test = train_test_split(self.X, self.y)
+        self.X = self.df[FEATURE_COLUMNS].join(vertical_dummies)
+        self.y = self.df[LABEL_COLUMN]
+
+        self._X_train,
+            self._X_test,
+            self._y_train,
+            self._y_test = train_test_split(self.X.values, self.y.values)
 
     def fit(self):
         return self._clf.fit(self._X_train, self._y_train)
