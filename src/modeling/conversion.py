@@ -83,9 +83,9 @@ class ConversionClassifier(object):
         self.connection = connection
         self._clf = GradientBoostingClassifier(
             learning_rate=0.001,
-            n_estimators=5000,
+            n_estimators=250
             verbose=100,
-            max_depth=5
+            max_depth=7
         )
 
     def load_dataset(self):
@@ -102,7 +102,6 @@ class ConversionClassifier(object):
         # Set Train/Test Data
         self.X = self.df[FEATURE_COLUMNS].join(vertical_dummies)
         self.y = self.df[LABEL_COLUMN]
-
         (
             self._X_train,
             self._X_test,
