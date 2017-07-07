@@ -8,12 +8,12 @@ from payments import Payment
 from analytics import Analytics
 from datetime import date, timedelta
 from multiprocessing import Process, Queue, cpu_count
-
+from modeling.conversion import main as build_conversion_model
 STRIPE_TOKEN = environ['HD_STRIPE_TOKEN']
 MIXPANEL_TOKEN = environ['HD_MIXPANEL_TOKEN']
 
-TIMEFRAME_DAYS = 180
-TIMEFRAME_OFFSET = 90
+TIMEFRAME_DAYS = 7
+TIMEFRAME_OFFSET = 0
 
 def work_queue(queue):
     print "Process started"
@@ -64,12 +64,16 @@ class Pipeline(object):
 
     def run(self):
         try:
-            self.import_datasources()
-            self.import_sql()
+            # Import Data
+            # self.import_datasources()
+            # self.import_sql()
+
+            # Build Models
+            build_conversion_model()
+            self._terminate_pool()
         except KeyboardInterrupt as e:
-            for p in self.processes:
-                print "Killing Process {}".format(p.pid)
-                p.terminate()
+            self._terminate_pool()
+
 
 
     def import_datasources(self):
@@ -108,6 +112,11 @@ class Pipeline(object):
 
         print "{} \t Importing Events to SQL".format(time.time())
         import_sql_events(self.connection)
+
+    def _terminate_pool(self):
+        for p in self.processes:
+            print "Killing Process {}".format(p.pid)
+            p.terminate()
 
     def _add_to_queue(self, job_type, data):
         self.queue.put((job_type, json.dumps(data)))
