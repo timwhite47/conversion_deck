@@ -114,7 +114,7 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
-    with open('../../data/conversion_model.pkl', 'w') as pkl:
+    with open('data/conversion_model.pkl', 'w') as pkl:
         pickle.dump(clf, pkl)
         bucket = s3.Bucket('conversion-deck')
         bucket.put_item(Key='conversion.pkl', Body=pkl)
