@@ -123,7 +123,7 @@ def main():
         bucket.put_object(Key='conversion.pkl', Body=pkl)
 
     feature_importances = zip(FEATURE_COLUMNS, clf._clf.feature_importances_)
-    feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reversed=True)
+    feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reverse=True)
 
     for feature, imporance in feature_importances:
         print "{} \t {}".format(imporance, feature)
