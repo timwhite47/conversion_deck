@@ -8,7 +8,7 @@ module_path = os.path.abspath(os.path.join('../conversion_deck'))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-from boto3.s3 import Bucket
+import boto3
 from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY
 from src.database.sql import psql_connection
 from sklearn.model_selection import train_test_split
@@ -100,7 +100,8 @@ class ConversionClassifier(object):
 def main():
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
+    s3 = boto3.resource('s3')
+    
     print "Starting Converstion Classifier"
     clf = ConversionClassifier()
 
@@ -112,7 +113,7 @@ def main():
 
     with open('../../data/conversion_model.pkl') as pkl:
         pickle.dump(clf, pkl)
-        bucket = Bucket('conversion-deck')
+        bucket = s3.Bucket('conversion-deck')
         bucket.put_item(Key='conversion.pkl', Body=pkl)
 
     feature_importances = zip(FEATURE_COLUMNS, clf._clf.feature_importances_)
