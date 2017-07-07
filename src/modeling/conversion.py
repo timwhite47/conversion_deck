@@ -13,6 +13,7 @@ from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY
 from src.database.sql import psql_connection
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.utils import shuffle
 
 MODEL_FILEPATH = 'data/conversion_model.pkl'
 FEATURE_COLUMNS = [
@@ -72,17 +73,17 @@ class ConversionClassifier(object):
         raw_converted_events_df = pd.read_sql_query(CONVERTED_EVENTS_QUERY, self.connection)
         raw_converted_age_df = pd.read_sql_query(CONVERTED_AGE_QUERY, self.connection, index_col='distinct_id')
         converted_events_df = raw_converted_events_df.pivot(index='distinct_id', columns='type', values='count')
-        self.raw_df = converted_events_df.join(raw_converted_age_df).fillna(0)
-        self.df = self.raw_df
+        raw_df = converted_events_df.join(raw_converted_age_df).fillna(0)
 
-        # Set Vertical Dummies
-        # vertical_dummies = pd.get_dummies(self.df['vertical'], prefix='vertical')
-        # self.df = self.df.join(vertical_dummies)
+        # Handle balanacing the classes
+        converted_df = raw_df[raw_df['converted'] == True]
+        not_converted = raw_df[raw_df['converted'] == False].sample(len(converted_df))
+        self.df = pd.concat([converted_df,not_converted])
+        self.df = shuffle(self.df)
 
         # Set Train/Test Data
         self.X = self.df[FEATURE_COLUMNS]
         self.y = self.df[LABEL_COLUMN]
-        # self.df.drop([LABEL_COLUMN, 'vertical'], axis=1, inplace=True)
 
         (
             self._X_train,
@@ -101,7 +102,7 @@ class ConversionClassifier(object):
         return self._clf.score(self._X_test, self._y_test)
 
     def __getstate__(self):
-        return { 'raw_df': self.raw_df, 'df': self.df, '_clf': self._clf }
+        return { 'df': self.df, '_clf': self._clf }
 
 def main():
     from os import sys, path
