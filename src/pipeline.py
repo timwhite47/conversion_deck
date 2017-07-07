@@ -65,8 +65,8 @@ class Pipeline(object):
     def run(self):
         try:
             # Import Data
-            # self.import_datasources()
-            # self.import_sql()
+            self.import_datasources()
+            self.import_sql()
 
             # Build Models
             build_conversion_model()
