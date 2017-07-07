@@ -2,13 +2,13 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-
+import cPickle as pickle
 module_path = os.path.abspath(os.path.join('../conversion_deck'))
 
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-
+from boto3.s3 import Bucket
 from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY
 from src.database.sql import psql_connection
 from sklearn.model_selection import train_test_split
@@ -16,27 +16,15 @@ from sklearn.ensemble import GradientBoostingClassifier
 
 FEATURE_COLUMNS = [
     'App Became Active',
-    # 'Click Button',
-    # 'Click Link',
-    # 'Client error',
-    # 'Countdown Pro Button',
     'Deck Created',
     'Display Limit Modal',
     'Display Limit Notification',
-    # 'Display Video Editor Modal',
     'Display Welcome Countdown',
-    # 'Display Zuru Upgrade Modal',
-    # 'Download PPTX',
-    # 'Downloaded Video',
     'Editor Opened',
     'Ended Onboarding',
-    # 'Error on payment',
-    # 'Error on payment (stripe)',
-    # 'Error on payment (stripe, reporting to user)',
     'Export',
     'Export PPT',
     'Export PPTX',
-    # 'Land on Checkout Page',
     'Land on Classroom Page',
     'Land on Education Page',
     'Land on Homepage',
@@ -56,18 +44,9 @@ FEATURE_COLUMNS = [
     'Slide start',
     'Start',
     'Started Onboarding',
-    # 'Successfully completed classroom upgrade',
-    # 'Successfully completed edu signup',
-    # 'Successfully completed edu upgrade',
-    # 'Successfully completed pro signup',
-    # 'Successfully completed pro upgrade',
-    # 'Validation failed',
     'View player page',
-    # 'Zuru Upgrade Edu Button',
-    # 'cancel',
     'signin',
     'camp_deliveries'
-    # 'account_age'
 ]
 
 LABEL_COLUMN = 'converted'
@@ -130,7 +109,12 @@ def main():
 
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
-    # import ipdb; ipdb.set_trace()
+
+    with open('../../data/conversion_model.pkl') as pkl:
+        pickle.dump(clf, pkl)
+        bucket = Bucket('conversion-deck')
+        bucket.put_item(Key='conversion.pkl', Body=pkl)
+
     feature_importances = zip(FEATURE_COLUMNS, clf._clf.feature_importances_)
     feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reversed=True)
 
