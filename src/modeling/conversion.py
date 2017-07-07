@@ -97,12 +97,14 @@ class ConversionClassifier(object):
         self.raw_df = converted_events_df.join(raw_converted_age_df).fillna(0)
         self.df = self.raw_df
 
+        # Set Vertical Dummies
         vertical_dummies = pd.get_dummies(self.df['vertical'], prefix='vertical')
         self.df = self.df.join(vertical_dummies)
+        self.df.drop('vertical', axis=1, inplace=True)
 
+        # Set Train/Test Data
         self.X = self.df[FEATURE_COLUMNS].values
         self.y = self.df[LABEL_COLUMN].values
-
         self._X_train, self._X_test, self._y_train, self._y_test = train_test_split(self.X, self.y)
 
     def fit(self):
