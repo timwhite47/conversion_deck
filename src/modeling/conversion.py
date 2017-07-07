@@ -97,6 +97,9 @@ class ConversionClassifier(object):
     def score(self):
         return self._clf.score(self._X_test, self._y_test)
 
+    def __getstate__(self):
+        return { 'raw_df': self.raw_df, 'df': self.df, '_clf': self._clf }
+
 def main():
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
