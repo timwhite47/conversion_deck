@@ -14,6 +14,7 @@ from src.database.sql import psql_connection
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 
+MODEL_FILEPATH = 'data/conversion_model.pkl'
 FEATURE_COLUMNS = [
     'App Became Active',
     'Deck Created',
@@ -114,8 +115,10 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
-    with open('data/conversion_model.pkl', 'w') as pkl:
+    with open(MODEL_FILEPATH, 'w') as pkl:
         pickle.dump(clf, pkl)
+
+    with open(MODEL_FILEPATH, 'r') as pkl:
         bucket = s3.Bucket('conversion-deck')
         bucket.put_object(Key='conversion.pkl', Body=pkl)
 
