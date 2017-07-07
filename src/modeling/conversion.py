@@ -101,7 +101,7 @@ def main():
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
     s3 = boto3.resource('s3')
-    
+
     print "Starting Converstion Classifier"
     clf = ConversionClassifier()
 
@@ -111,7 +111,7 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
-    with open('../../data/conversion_model.pkl') as pkl:
+    with open('../../data/conversion_model.pkl', 'w') as pkl:
         pickle.dump(clf, pkl)
         bucket = s3.Bucket('conversion-deck')
         bucket.put_item(Key='conversion.pkl', Body=pkl)
