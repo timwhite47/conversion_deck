@@ -118,9 +118,10 @@ class ConversionClassifier(object):
     def score(self):
         return self._clf.score(self._X_test, self._y_test)
 
-if __name__ == '__main__':
+def main():
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
     print "Starting Converstion Classifier"
     clf = ConversionClassifier()
 
@@ -131,9 +132,13 @@ if __name__ == '__main__':
     clf.fit()
     # import ipdb; ipdb.set_trace()
     feature_importances = zip(FEATURE_COLUMNS, clf._clf.feature_importances_)
-    feature_importances = sorted(feature_importances, key=lambda tup: tup[1])
+    feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reversed=True)
 
     for feature, imporance in feature_importances:
-        print "{} \t {}".format(feature, imporance)
+        print "{} \t {}".format(imporance, feature)
 
     print "Model Score: {}".format(clf.score())
+
+
+if __name__ == '__main__':
+    main()
