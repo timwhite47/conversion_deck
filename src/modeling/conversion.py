@@ -70,9 +70,10 @@ class ConversionClassifier(object):
         self.connection = connection
         self._clf = GradientBoostingClassifier(
             learning_rate=0.001,
-            n_estimators=250,
+            n_estimators=2500,
             verbose=100,
-            max_depth=7,
+            max_depth=12,
+            max_features='sqrt',
         )
 
     def load_dataset(self):
