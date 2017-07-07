@@ -16,7 +16,10 @@ CONVERTED_AGE_QUERY = """
 SELECT
     u.distinct_id,
     CASE WHEN c.converted_at IS NOT NULL THEN TRUE ELSE FALSE END AS converted,
-    extract(DAY FROM c.converted_at) AS account_age
+    extract(DAY FROM c.converted_at) AS account_age,
+    u.vertical,
+    u.camp_deliveries
+
 FROM users AS u
 LEFT JOIN (
     SELECT email, created_at AS converted_at
@@ -25,5 +28,5 @@ LEFT JOIN (
     ON converted.customer_id = c.identifier
 ) AS c
 ON c.email = u.email
-GROUP BY u.distinct_id, c.converted_at;
+GROUP BY u.distinct_id, c.converted_at, u.vertical, u.camp_deliveries;
 """

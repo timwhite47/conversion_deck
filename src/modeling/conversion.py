@@ -66,6 +66,8 @@ FEATURE_COLUMNS = [
     # 'Zuru Upgrade Edu Button',
     # 'cancel',
     'signin',
+    'vertical',
+    'camp_deliveries'
     # 'account_age'
 ]
 
@@ -88,16 +90,15 @@ class ConversionClassifier(object):
         )
 
     def load_dataset(self):
+        # Load Raw dataframe from sql
         raw_converted_events_df = pd.read_sql_query(CONVERTED_EVENTS_QUERY, self.connection)
         raw_converted_age_df = pd.read_sql_query(CONVERTED_AGE_QUERY, self.connection, index_col='distinct_id')
-
         converted_events_df = raw_converted_events_df.pivot(index='distinct_id', columns='type', values='count')
         self.raw_df = converted_events_df.join(raw_converted_age_df).fillna(0)
         self.df = self.raw_df
 
-        # Take the log of the values
-        # for feature in FEATURE_COLUMNS:
-        #     self.df[feature] = self.df[feature].apply(lambda x: np.log(1+x))
+        vertical_dummies = pd.get_dummies(self.df['vertical'], prefix='vertical')
+        self.df = self.df.join(vertical_dummies)
 
         self.X = self.df[FEATURE_COLUMNS].values
         self.y = self.df[LABEL_COLUMN].values
@@ -116,9 +117,12 @@ class ConversionClassifier(object):
 if __name__ == '__main__':
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
+    print "Starting Converstion Classifier"
     clf = ConversionClassifier()
+
+    print "Loading dataset"
     clf.load_dataset()
+
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
     # import ipdb; ipdb.set_trace()
