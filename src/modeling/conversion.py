@@ -66,7 +66,6 @@ FEATURE_COLUMNS = [
     # 'Zuru Upgrade Edu Button',
     # 'cancel',
     'signin',
-    'vertical',
     'camp_deliveries'
     # 'account_age'
 ]
