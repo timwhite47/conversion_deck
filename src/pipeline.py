@@ -9,6 +9,7 @@ from analytics import Analytics
 from datetime import date, timedelta
 from multiprocessing import Process, Queue, cpu_count
 from modeling.conversion import main as build_conversion_model
+
 STRIPE_TOKEN = environ['HD_STRIPE_TOKEN']
 MIXPANEL_TOKEN = environ['HD_MIXPANEL_TOKEN']
 

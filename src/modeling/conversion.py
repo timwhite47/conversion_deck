@@ -47,7 +47,6 @@ FEATURE_COLUMNS = [
     'Started Onboarding',
     'View player page',
     'signin',
-    'camp_deliveries'
 ]
 
 LABEL_COLUMN = 'converted'
