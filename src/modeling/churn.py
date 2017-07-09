@@ -106,7 +106,7 @@ def main():
         bucket.put_object(Key='models/churn.pkl', Body=pkl)
 
     print "Write conversion df to SQL"
-    clf.df.to_sql('churns', pandas_engine(), if_exists='replace')
+    clf.df.drop(DROP_FIELDS, axis=1).to_sql('churns', pandas_engine(), if_exists='replace')
 
     feature_importances = zip(clf.features, clf._clf.feature_importances_)
     feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reverse=True)
