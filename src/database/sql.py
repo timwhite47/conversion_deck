@@ -3,6 +3,7 @@ from os import environ
 from psycopg2.extensions import AsIs
 from dynamodb import fetch_customers, fetch_profiles, fetch_events, fetch_payment_events
 from formatters import format_sql_customer, format_sql_event, format_sql_profile, format_sql_payment_event
+from sqlalchemy import create_engine
 
 PSQL_HOST = environ['CD_PSQL_HOST']
 PSQL_PW = environ['CD_PSQL_PASSWORD']
@@ -16,7 +17,9 @@ def psql_connection():
         user=PSQL_USER,
         password=PSQL_PW
     )
-
+def pandas_engine():
+    url = "postgresql://{}:{}@{}/{}".format(PSQL_USER, PSQL_PW, PSQL_HOST, PSQL_DB)
+    return create_engine(url)
 def import_sql_payment_events(connection):
     _import_sql(connection, fetch_payment_events(), insert_sql_payment_event)
 

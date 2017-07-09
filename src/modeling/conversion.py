@@ -10,7 +10,7 @@ if module_path not in sys.path:
 
 import boto3
 from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY
-from src.database.sql import psql_connection
+from src.database.sql import psql_connection, pandas_engine
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.utils import shuffle
@@ -136,7 +136,7 @@ def main():
         bucket.put_object(Key='models/conversion.pkl', Body=pkl)
 
     print "Writing results to SQL"
-    clf.df.to_sql('conversions', clf.connection, if_exists='replace')
+    clf.df.to_sql('conversions', pandas_engine(), if_exists='replace')
 
     feature_importances = zip(FEATURE_COLUMNS, clf._clf.feature_importances_)
     feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reverse=True)
