@@ -97,12 +97,17 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
+    print "Serializing Model"
     with open(MODEL_FILEPATH, 'w') as pkl:
         pickle.dump(clf, pkl)
 
+    print "Uploading Model to S3"
     with open(MODEL_FILEPATH, 'r') as pkl:
         bucket = s3.Bucket('conversion-deck')
         bucket.put_object(Key='models/churn.pkl', Body=pkl)
+
+    print "Write conversion df to SQL"
+    clf.df.to_sql('churns', clf.connection, if_exists='replace')
 
     feature_importances = zip(clf.features, clf._clf.feature_importances_)
     feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reverse=True)

@@ -126,12 +126,17 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
+    print "Serializing Model"
     with open(MODEL_FILEPATH, 'w') as pkl:
         pickle.dump(clf, pkl)
 
+    print "Uploading model to S3"
     with open(MODEL_FILEPATH, 'r') as pkl:
         bucket = s3.Bucket('conversion-deck')
         bucket.put_object(Key='models/conversion.pkl', Body=pkl)
+
+    print "Writing results to SQL"
+    clf.df.to_sql('conversions', clf.connection, if_exists='replace')
 
     feature_importances = zip(FEATURE_COLUMNS, clf._clf.feature_importances_)
     feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reverse=True)
