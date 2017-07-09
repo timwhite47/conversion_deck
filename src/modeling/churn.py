@@ -7,7 +7,6 @@ import cPickle as pickle
 import pandas as pd
 
 from queries import CHURNED_EVENT_QUERY, CHURNED_AGE_QUERY
-from src.database.sql import psql_connection, pandas_engine
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.utils import shuffle
@@ -17,7 +16,7 @@ module_path = os.path.abspath(os.path.join('../conversion_deck'))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-from src.database.sql import psql_connection
+from src.database.sql import psql_connection, pandas_engine
 DROP_FIELDS = ['churned', 'vertical', 'cancel', 'Client error', 'Land on Homepage', 'Click Link']
 MODEL_FILEPATH = 'data/churn_model.pkl'
 

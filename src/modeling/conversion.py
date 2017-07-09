@@ -136,7 +136,7 @@ def main():
         bucket.put_object(Key='models/conversion.pkl', Body=pkl)
 
     print "Writing results to SQL"
-    clf.df.to_sql('conversions', pandas_engine(), if_exists='replace')
+    clf.df[FEATURE_COLUMNS].to_sql('conversions', pandas_engine(), if_exists='replace')
 
     feature_importances = zip(FEATURE_COLUMNS, clf._clf.feature_importances_)
     feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reverse=True)
