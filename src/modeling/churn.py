@@ -24,7 +24,6 @@ DROP_FIELDS = [
     'Client error',
     'Land on Homepage',
     'Click Link',
-    "Error on payment (stripe)",
     "Error on payment (stripe, reporting to user)",
 ]
 MODEL_FILEPATH = 'data/churn_model.pkl'
