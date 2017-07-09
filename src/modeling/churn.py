@@ -17,7 +17,16 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 from src.database.sql import psql_connection, pandas_engine
-DROP_FIELDS = ['churned', 'vertical', 'cancel', 'Client error', 'Land on Homepage', 'Click Link']
+DROP_FIELDS = [
+    'churned',
+    'vertical',
+    'cancel',
+    'Client error',
+    'Land on Homepage',
+    'Click Link',
+    "Error on payment (stripe)",
+    "Error on payment (stripe, reporting to user)",
+]
 MODEL_FILEPATH = 'data/churn_model.pkl'
 
 class ChurnClassifier(object):
