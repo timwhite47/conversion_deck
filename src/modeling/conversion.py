@@ -9,7 +9,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import boto3
-from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY
+from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY, CONVERSION_PREDICTION_QUERY
 from src.database.sql import psql_connection, pandas_engine
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
@@ -103,11 +103,27 @@ class ConversionClassifier(object):
     def fit(self):
         return self._clf.fit(self._X_train, self._y_train)
 
-    def predict(X):
-        return self._clf.predict(X)
+    def predict(self, X):
+        return self._clf.predict_proba(X)
 
     def score(self):
         return self._clf.score(self._X_test, self._y_test)
+
+    def non_subscribers_predictions(self):
+        conversion_query_df = pd.read_sql_query(CONVERSION_PREDICTION_QUERY, self.connection)
+        conversion_df = (
+            conversion_query_df
+                .pivot(index='distinct_id', columns='type', values='count')
+                .fillna(0)
+        )
+
+        X = conversion_df[FEATURE_COLUMNS].values
+        conversion_df['conversion_proba'] = map(
+            lambda proba: proba[1],
+            self.predict(X)
+        )
+
+        conversion_df[FEATURE_COLUMNS+['conversion_proba']].to_sql('conversions', pandas_engine(), if_exists='replace')
 
     def __getstate__(self):
         return { 'df': self.df, '_clf': self._clf }
@@ -135,8 +151,8 @@ def main():
         bucket = s3.Bucket('conversion-deck')
         bucket.put_object(Key='models/conversion.pkl', Body=pkl)
 
-    print "Writing results to SQL"
-    clf.df[FEATURE_COLUMNS].to_sql('conversions', pandas_engine(), if_exists='replace')
+    print "Making Predictions on Basic users"
+    clf.non_subscribers_predictions()
 
     feature_importances = zip(FEATURE_COLUMNS, clf._clf.feature_importances_)
     feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reverse=True)

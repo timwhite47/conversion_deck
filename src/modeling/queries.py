@@ -101,3 +101,60 @@ ON e.distinct_id = u.distinct_id
 WHERE e.time > converted_at AND e.time < COALESCE(churned_at, current_timestamp)
 GROUP BY e.type, u.distinct_id
 """
+
+CHURN_PREDICTION_QUERY = """
+SELECT
+    u.distinct_id,
+    e.type,
+    count(e.event_id),
+    extract(DAY FROM CURRENT_TIMESTAMP - converted_at) AS account_age,
+    u.vertical,
+    u.camp_deliveries
+
+FROM users AS u
+
+INNER JOIN customers AS c
+ON c.email = u.email
+
+INNER JOIN subscriptions AS s
+ON s.customer_id = c.identifier
+
+LEFT JOIN events AS e
+ON e.distinct_id = u.distinct_id
+
+INNER JOIN (
+    SELECT email, MAX(pe.time) AS converted_at
+    FROM customers AS c
+    LEFT JOIN payment_events AS pe
+    ON pe.customer_id = c.identifier
+    WHERE pe.type = 'customer.subscription.created'
+    GROUP BY c.email
+) AS converted
+ON u.email = converted.email
+
+WHERE e.type IS NOT NULL
+GROUP BY u.distinct_id, e.type, converted_at, u.vertical, u.camp_deliveries;
+"""
+
+CONVERSION_PREDICTION_QUERY = """
+SELECT u.distinct_id, e.type, count(e.event_id)
+FROM users AS u
+
+LEFT JOIN events AS e
+ON e.distinct_id = u.distinct_id
+
+WHERE
+    u.distinct_id NOT IN (
+        SELECT u.distinct_id
+        FROM subscriptions AS s
+        INNER JOIN customers AS c
+        ON c.identifier = s.customer_id
+        INNER JOIN users AS u
+        ON u.email = c.email
+    ) AND
+    u.subscription_type = 'basic' AND
+    u.email IS NOT NULL AND
+    e.type IS NOT NULL
+
+GROUP BY u.distinct_id, e.type, u.email, u.vertical
+"""
