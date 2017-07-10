@@ -1,22 +1,15 @@
 import React, { Component } from 'react';
-import {Link} from 'react-router';
+import { Link } from 'react-router-dom';
 
-class Main extends Component {
+class Conversion extends React.Component {
   render() {
-    return (
-      <div>
-        <nav className="navbar navbar-default" role="navigation">
-          <div className="container-fluid">
-            <div className="navbar-header">
-              <a className="navbar-brand" href="#">Name</a>
-            </div>
-          </div>
-        </nav>
-        <div className='main-container'>
-          {this.props.children}
-        </div>
-      </div>
-    );
+    return <h1>Conversions!!!</h1>
+  }
+}
+
+class Churn extends React.Component {
+  render() {
+    return <h1>Churns!!!</h1>
   }
 }
 
@@ -26,8 +19,13 @@ class Home extends Component {
       <div className="container">
         <div className="jumbotron text-center">
           <h1>Hello there</h1>
-          <Link to='/view'>
-            <button className="btn btn-primary">Start</button>
+
+          <Link to='/conversions'>
+            <button className="btn btn-primary">Conversions</button>
+          </Link>
+
+          <Link to='/churns'>
+            <button className="btn btn-primary">Churns</button>
           </Link>
         </div>
       </div>
@@ -37,4 +35,4 @@ class Home extends Component {
 }
 
 
-export {Main, Home};
+export { Home, Conversion, Churn };
