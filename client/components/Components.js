@@ -1,17 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-
-class Conversion extends React.Component {
-  render() {
-    return <h1>Conversions!!!</h1>
-  }
-}
-
-class Churn extends React.Component {
-  render() {
-    return <h1>Churns!!!</h1>
-  }
-}
+import Churn from './Churn'
+import Conversion from './Conversion'
+import { Table, Thead, Th } from 'reactable'
 
 class ContentNav extends React.Component {
   render() {
@@ -36,29 +27,8 @@ class Footer extends React.Component {
   render() {
     return <footer className="footer">
         <div className="container-fluid">
-            <nav className="pull-left">
-                <ul>
-
-                    <li>
-                        <a href="http://www.creative-tim.com">
-                            Creative Tim
-                        </a>
-                    </li>
-                    <li>
-                        <a href="http://blog.creative-tim.com">
-                           Blog
-                        </a>
-                    </li>
-                    <li>
-                        <a href="http://www.creative-tim.com/license">
-                            Licenses
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            <div className="copyright pull-right">
-                &copy; <script>document.write(new Date().getFullYear())</script>, made with <i className="fa fa-heart heart"></i> by <a href="http://www.creative-tim.com">Creative Tim</a>
-            </div>
+            <nav className="pull-left"></nav>
+            <div className="copyright pull-right"></div>
         </div>
     </footer>
   }
