@@ -9,6 +9,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import boto3
+from features import CONVERSION as FEATURE_COLUMNS
 from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY, CONVERSION_PREDICTION_QUERY
 from src.database.sql import psql_connection, pandas_engine
 from sklearn.model_selection import train_test_split
@@ -16,47 +17,6 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.utils import shuffle
 
 MODEL_FILEPATH = 'data/conversion_model.pkl'
-FEATURE_COLUMNS = [
-    'App Became Active',
-    'Countdown Pro Button',
-    'Deck Created',
-    'Display Limit Modal',
-    'Display Limit Notification',
-    'Display Video Editor Modal',
-    'Display Zuru Upgrade Modal',
-    'Download PPTX',
-    'Downloaded Video',
-    'Editor Opened',
-    'Ended Onboarding',
-    'Export',
-    'Export PPT',
-    'Export PPTX',
-    'Land on Classroom Page',
-    'Land on Education Page',
-    'Land on Homepage',
-    'Land on Pricing Page',
-    'Land on Realtor Page',
-    'Land on Zuru Page',
-    'Limit Button',
-    'Limit Modal Edu Button',
-    'Limit Modal Pro Button',
-    'New Deck',
-    'Privacy',
-    'Recorded Audio',
-    'Set Privacy Public',
-    'Set Privacy Restricted',
-    'Share',
-    'Sign In',
-    'Slide start',
-    'Start',
-    'Started Onboarding',
-    # 'Validation failed',
-    'View player page',
-    'Zuru Upgrade Edu Button',
-    'Zuru Upgrade Pro Button',
-    'signin',
-]
-
 LABEL_COLUMN = 'converted'
 
 class ConversionClassifier(object):

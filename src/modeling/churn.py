@@ -17,66 +17,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 from src.database.sql import psql_connection, pandas_engine
-FEATURES = [
-    "account_age",
-    "camp_deliveries",
-    "Slide start",
-    "vertical_educator",
-    "Editor Opened",
-    "Deck Created",
-    "vertical_marketing",
-    "Started Onboarding",
-    "Export",
-    "signin",
-    "App Became Active",
-    "Sign In",
-    "View player page",
-    "Land on Pricing Page",
-    "Share",
-    "Ended Onboarding",
-    "Display Video Editor Modal",
-    "Export PPTX",
-    "Recorded Audio",
-    "Land on Classroom Page",
-    "vertical_real_estate",
-    "Export PPT",
-    "vertical_student",
-    "Display Limit Notification",
-    "Land on Zuru Page",
-    "Start",
-    "Land on Education Page",
-    "Set Privacy Restricted",
-    "Display Welcome Countdown",
-    "Privacy",
-    "vertical_coach",
-    "vertical_health",
-    "vertical_non-profit",
-    "vertical_religious_organization",
-    "vertical_professional",
-    "Land on Checkout Page",
-    "Click Button",
-    "Downloaded Video",
-    "Successfully completed edu signup",
-    "Set Privacy Public",
-    "vertical_sales",
-    "Validation failed",
-    "signup",
-    "New Deck",
-    "vertical_small_business_owner",
-    "upgrade",
-    "vertical_other",
-    "Download PPTX",
-    "Successfully completed pro signup",
-    "Display Limit Modal",
-    "Error on payment",
-    "Limit Button",
-    "Sign Up",
-    "Successfully completed classroom upgrade",
-    "Successfully completed edu upgrade",
-    "Successfully completed pro upgrade",
-    "vertical_hr",
-    "vertical_lawyer",
-]
+from features import CHURN as FEATURE_COLUMNS
 MODEL_FILEPATH = 'data/churn_model.pkl'
 
 class ChurnClassifier(object):
@@ -120,16 +61,16 @@ class ChurnClassifier(object):
         events = query_df.pivot(index='distinct_id', columns='type', values='count')
         prediction_df = events.join(ages).fillna(0)
 
-        prediction_df['churn_proba'] = map(lambda prediction: prediction[1], self.predict(prediction_df[FEATURES].values))
-        prediction_df = prediction_df[FEATURES+['churn_proba']].drop_duplicates()
+        prediction_df['churn_proba'] = map(lambda prediction: prediction[1], self.predict(prediction_df[FEATURE_COLUMNS].values))
+        prediction_df = prediction_df[FEATURE_COLUMNS+['churn_proba']].drop_duplicates()
         prediction_df.to_sql('churns', pandas_engine(), if_exists='replace')
 
     def _load_training_dataset(self):
         train_df = self.df.copy()
 
         self.y = train_df['churned'].values
-        self.features = train_df[FEATURES].columns
-        self.X = train_df[FEATURES].values
+        self.features = train_df[FEATURE_COLUMNS].columns
+        self.X = train_df[FEATURE_COLUMNS].values
 
         (
             self._X_train,
