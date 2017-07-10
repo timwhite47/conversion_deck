@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Conversion, Churn } from '../components/Components';
+import { Home, Conversion, Churn, Sidebar, ContentNav, Footer } from '../components/Components';
 
 import {
   BrowserRouter as Router,
@@ -10,19 +10,19 @@ import {
 
 var routes = (
   <Router>
-    <div>
-      <nav className="navbar navbar-default" role="navigation">
-        <div className="container-fluid">
-          <div className="navbar-header">
-            <Link className="navbar-brand" to="/">Conversion Deck</Link>
-          </div>
-        </div>
-      </nav>
+    <div className='content'>
+      <Sidebar />
 
-      <div className='main-container'>
-        <Route exact path='/' component={Home} />
-        <Route exact path='/conversions' component={Conversion}/>
-        <Route exact path='/churns' component={Churn} />
+      <div className="main-panel" id='app'>
+          <ContentNav />
+
+          <div className='container'>
+            <Route exact path='/' component={Home} />
+            <Route exact path='/conversions' component={Conversion}/>
+            <Route exact path='/churns' component={Churn} />
+          </div>
+
+          <Footer />
       </div>
     </div>
   </Router>
