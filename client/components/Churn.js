@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Table, Thead, Th } from 'reactable'
+import { Pagination } from 'react-bootstrap'
 
 class Churn extends Component {
   constructor(props) {
@@ -11,12 +12,15 @@ class Churn extends Component {
   }
 
   componentWillMount() {
-    fetch('/api/churns')
+    this.fetchConversions()
+  }
+
+  fetchConversions(clickedPage) {
+    fetch(`/api/churns?page=${clickedPage || this.state.page || 0}`)
       .then((resp) => resp.json())
-      .then(({ data: churns }) => {
-        const loading = false
+      .then(({ data: churns, count, page_count, page}) => {
         this.setState({
-          loading, churns
+          loading: false, churns, count, page_count, page
         });
       })
 
@@ -66,6 +70,17 @@ class Churn extends Component {
 
           </Thead>
         </Table>
+
+        <Pagination
+          bsSize="large"
+          first
+          last
+          ellipsis
+          boundaryLinks
+          maxButtons={10}
+          items={this.state.page_count}
+          activePage={this.state.page}
+          onSelect={(page) => this.fetchConversions(page)} />
       </div>
     );
   }

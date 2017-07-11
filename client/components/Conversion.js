@@ -1,21 +1,24 @@
 import React, { Component } from 'react';
 import { Table, Thead, Th } from 'reactable'
+import { Pagination } from 'react-bootstrap'
 
 class Conversion extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      loading: true
+      loading: true,
     };
   }
   componentWillMount() {
-    fetch('/api/conversions')
+    this.fetchConversions()
+  }
+  fetchConversions(clickedPage) {
+    fetch(`/api/conversions?page=${clickedPage || this.state.page || 0}`)
       .then((resp) => resp.json())
-      .then(({ data: conversions }) => {
-        const loading = false
+      .then(({ data: conversions, count, page_count, page}) => {
         this.setState({
-          loading, conversions
+          loading: false, conversions, count, page_count, page
         });
       })
   }
@@ -64,6 +67,17 @@ class Conversion extends Component {
             </Th>
           </Thead>
         </Table>
+
+        <Pagination
+          bsSize="large"
+          first
+          last
+          ellipsis
+          boundaryLinks
+          maxButtons={10}
+          items={this.state.page_count}
+          activePage={this.state.page}
+          onSelect={(page) => this.fetchConversions(page)} />
       </div>
     );
   }

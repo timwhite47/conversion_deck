@@ -16,7 +16,13 @@ def conversions(args):
         .all()
     )
 
-    return _format_response(records)
+
+    current_page = page
+    count = Conversion.query.count()
+    pages = count / PAGE_SIZE
+    records = _format_response(records)
+
+    return (records, count, pages, current_page)
 
 def churns(args):
     page = _get_page_arg(args)
@@ -29,7 +35,13 @@ def churns(args):
         .offset(page * PAGE_SIZE)
         .all()
     )
-    return _format_response(records)
+
+    current_page = page
+    count = Churn.query.count()
+    pages = count / PAGE_SIZE
+    records = _format_response(records)
+
+    return (records, count, pages, current_page)
 
 def _get_page_arg(args):
     if not args:

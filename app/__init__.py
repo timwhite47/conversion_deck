@@ -28,11 +28,23 @@ def churns():
 
 @app.route('/api/conversions')
 def api_conversions():
-    return jsonify({"data": logic.conversions(request.args)})
+    records, count, pages, current_page = logic.conversions(request.args)
+    return jsonify({
+        "data": records,
+        "count": count,
+        "page_count": pages,
+        "page": current_page
+    })
 
 @app.route('/api/churns')
 def api_churns():
-    return jsonify({"data": logic.churns(request.args)})
+    records, count, pages, current_page = logic.churns(request.args)
+    return jsonify({
+        "data": records,
+        "count": count,
+        "page_count": pages,
+        "page": current_page
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
