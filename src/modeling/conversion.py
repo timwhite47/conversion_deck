@@ -29,7 +29,7 @@ class ConversionClassifier(object):
         self.connection = connection
         self._clf = GradientBoostingClassifier(
             learning_rate=0.001,
-            n_estimators=250,
+            n_estimators=1000,
             verbose=100,
             max_depth=15,
             max_features='sqrt',
@@ -76,7 +76,9 @@ class ConversionClassifier(object):
                 .fillna(0)
         )
 
-        X = conversion_df[FEATURE_COLUMNS].values
+        features = conversion_df.columns & FEATURE_COLUMNS
+
+        X = conversion_df[features].values
         conversion_df['conversion_proba'] = map(
             lambda proba: proba[1],
             self.predict(X)
