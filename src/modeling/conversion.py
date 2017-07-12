@@ -10,7 +10,8 @@ if module_path not in sys.path:
 from features import CONVERSION as FEATURE_COLUMNS
 from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY, CONVERSION_PREDICTION_QUERY
 from src.database.sql import psql_connection, pandas_engine
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import recall_score
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.utils import shuffle
 from helpers import serialize_to_s3, determine_top_features
@@ -20,32 +21,42 @@ LABEL_COLUMN = 'converted'
 
 class ConversionClassifier(object):
     """docstring for ConversionClassifier."""
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, clf=None):
         super(ConversionClassifier, self).__init__()
 
         if not connection:
             connection = psql_connection()
 
+        if not clf:
+            clf = GradientBoostingClassifier(
+                learning_rate=0.001,
+                n_estimators=7500,
+                verbose=100,
+                subsample=0.01,
+                max_depth=12,
+                max_features='log2'
+            )
+
         self.connection = connection
-        self._clf = GradientBoostingClassifier(
-            learning_rate=0.001,
-            n_estimators=1000,
-            verbose=100,
-            max_depth=15,
-            max_features='sqrt',
-        )
+        self._clf = clf
 
-    def load_dataset(self):
-        # Load Raw dataframe from sql
-        raw_converted_events_df = pd.read_sql_query(CONVERTED_EVENTS_QUERY, self.connection)
-        raw_converted_age_df = pd.read_sql_query(CONVERTED_AGE_QUERY, self.connection, index_col='distinct_id')
-        converted_events_df = raw_converted_events_df.pivot(index='distinct_id', columns='type', values='count')
-        raw_df = converted_events_df.join(raw_converted_age_df)
+    def load_dataset(self, csv=False):
+        if csv:
+            self.df = pd.read_csv('data/conversion_df.csv')
+        else:
+            # Load Raw dataframe from sql
+            raw_converted_events_df = pd.read_sql_query(CONVERTED_EVENTS_QUERY, self.connection)
+            raw_converted_age_df = pd.read_sql_query(CONVERTED_AGE_QUERY, self.connection, index_col='distinct_id')
+            converted_events_df = raw_converted_events_df.pivot(index='distinct_id', columns='type', values='count')
+            raw_df = converted_events_df.join(raw_converted_age_df)
 
-        # Handle balanacing the classes
-        converted_df = raw_df[raw_df['converted'] == True]
-        not_converted = raw_df[raw_df['converted'] == False].sample(len(converted_df))
-        self.df = pd.concat([converted_df,not_converted])
+            # Handle balanacing the classes
+            converted_df = raw_df[raw_df['converted'] == True]
+            not_converted = raw_df[raw_df['converted'] == False].sample(len(converted_df))
+
+            self.df = pd.concat([converted_df,not_converted])
+            self.df.to_csv('data/conversion_df.csv')
+
         self.df = shuffle(self.df)
 
         # Set Train/Test Data
@@ -66,7 +77,10 @@ class ConversionClassifier(object):
         return self._clf.predict_proba(X)
 
     def score(self):
-        return self._clf.score(self._X_test, self._y_test)
+        y_true = self._y_test
+        y_pred = self._clf.predict(self._X_test)
+
+        return recall_score(y_true, y_pred)
 
     def non_subscribers_predictions(self):
         conversion_query_df = pd.read_sql_query(CONVERSION_PREDICTION_QUERY, self.connection)
@@ -91,6 +105,24 @@ class ConversionClassifier(object):
     def __getstate__(self):
         return { 'df': self.df, '_clf': self._clf }
 
+def grid_search():
+    parameters = {
+        'learning_rate':(0.1, 0.01, 0.001,),
+        'n_estimators':[5000, 7500],
+        'subsample': [1, 0.1, 0.01],
+        'max_depth': (5, 10, 15, 20),
+        'max_features': ('log2','sqrt', None)
+    }
+    gbclf = GradientBoostingClassifier()
+    grid_clf = GridSearchCV(gbclf, parameters, n_jobs=-1, verbose=100, scoring='recall')
+    clf = ConversionClassifier(clf=grid_clf)
+    clf.load_dataset()
+    clf.fit()
+
+    print "Grid Search Best Params"
+    print grid_clf.best_params_
+    print grid_clf.best_score_
+
 def main():
     print "Starting Converstion Classifier"
     clf = ConversionClassifier()
@@ -101,7 +133,7 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
-    # serialize_to_s3(clf, MODEL_FILEPATH, 'models/conversion.pkl')
+    serialize_to_s3(clf, MODEL_FILEPATH, 'models/conversion.pkl')
 
     print "Making Predictions on Basic users"
     clf.non_subscribers_predictions()
@@ -112,4 +144,5 @@ def main():
 
 
 if __name__ == '__main__':
+    # grid_search()
     main()
