@@ -137,24 +137,18 @@ GROUP BY u.distinct_id, e.type, converted_at, u.vertical, u.camp_deliveries;
 """
 
 CONVERSION_PREDICTION_QUERY = """
-SELECT u.distinct_id, e.type, count(e.event_id)
+SELECT DISTINCT u.distinct_id, e.type, count(e.event_id), u.email
 FROM users AS u
 
 LEFT JOIN events AS e
 ON e.distinct_id = u.distinct_id
 
 WHERE
-    u.distinct_id NOT IN (
-        SELECT u.distinct_id
-        FROM subscriptions AS s
-        INNER JOIN customers AS c
-        ON c.identifier = s.customer_id
-        INNER JOIN users AS u
-        ON u.email = c.email
-    ) AND
     u.subscription_type = 'basic' AND
     u.email IS NOT NULL AND
-    e.type IS NOT NULL
+    u.signup_at IS NOT NULL AND
+    u.signup_at > to_date('2017-04-01', 'YYYY-MM-DD')
 
-GROUP BY u.distinct_id, e.type, u.email, u.vertical
+
+GROUP BY u.distinct_id, e.type, u.email
 """
