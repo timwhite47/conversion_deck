@@ -76,9 +76,11 @@ class ConversionClassifier(object):
                 .fillna(0)
         )
 
-        features = conversion_df.columns & FEATURE_COLUMNS
+        blank_columns = set(FEATURE_COLUMNS) - set(conversion_df.columns)
+        for col in blank_columns:
+            conversion_df[col] = 0
+        X = conversion_df[FEATURE_COLUMNS].values
 
-        X = conversion_df[features].values
         conversion_df['conversion_proba'] = map(
             lambda proba: proba[1],
             self.predict(X)
