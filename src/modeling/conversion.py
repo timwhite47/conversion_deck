@@ -2,19 +2,18 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-import cPickle as pickle
 module_path = os.path.abspath(os.path.join('../conversion_deck'))
 
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-import boto3
 from features import CONVERSION as FEATURE_COLUMNS
 from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY, CONVERSION_PREDICTION_QUERY
 from src.database.sql import psql_connection, pandas_engine
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.utils import shuffle
+from helpers import serialize_to_s3, determine_top_features
 
 MODEL_FILEPATH = 'data/conversion_model.pkl'
 LABEL_COLUMN = 'converted'
@@ -30,9 +29,9 @@ class ConversionClassifier(object):
         self.connection = connection
         self._clf = GradientBoostingClassifier(
             learning_rate=0.001,
-            n_estimators=2500,
+            n_estimators=250,
             verbose=100,
-            max_depth=12,
+            max_depth=15,
             max_features='sqrt',
         )
 
@@ -41,7 +40,7 @@ class ConversionClassifier(object):
         raw_converted_events_df = pd.read_sql_query(CONVERTED_EVENTS_QUERY, self.connection)
         raw_converted_age_df = pd.read_sql_query(CONVERTED_AGE_QUERY, self.connection, index_col='distinct_id')
         converted_events_df = raw_converted_events_df.pivot(index='distinct_id', columns='type', values='count')
-        raw_df = converted_events_df.join(raw_converted_age_df).fillna(0)
+        raw_df = converted_events_df.join(raw_converted_age_df)
 
         # Handle balanacing the classes
         converted_df = raw_df[raw_df['converted'] == True]
@@ -50,7 +49,7 @@ class ConversionClassifier(object):
         self.df = shuffle(self.df)
 
         # Set Train/Test Data
-        self.X = self.df[FEATURE_COLUMNS]
+        self.X = self.df[FEATURE_COLUMNS].fillna(0)
         self.y = self.df[LABEL_COLUMN]
 
         (
@@ -89,10 +88,6 @@ class ConversionClassifier(object):
         return { 'df': self.df, '_clf': self._clf }
 
 def main():
-    from os import sys, path
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    s3 = boto3.resource('s3')
-
     print "Starting Converstion Classifier"
     clf = ConversionClassifier()
 
@@ -102,23 +97,12 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
-    print "Serializing Model"
-    with open(MODEL_FILEPATH, 'w') as pkl:
-        pickle.dump(clf, pkl)
-
-    print "Uploading model to S3"
-    with open(MODEL_FILEPATH, 'r') as pkl:
-        bucket = s3.Bucket('conversion-deck')
-        bucket.put_object(Key='models/conversion.pkl', Body=pkl)
+    # serialize_to_s3(clf, MODEL_FILEPATH, 'models/conversion.pkl')
 
     print "Making Predictions on Basic users"
     clf.non_subscribers_predictions()
 
-    feature_importances = zip(FEATURE_COLUMNS, clf._clf.feature_importances_)
-    feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reverse=True)
-
-    for feature, imporance in feature_importances:
-        print "{} \t {}".format(imporance, feature)
+    determine_top_features(clf, FEATURE_COLUMNS, 'data/conversion_features.json')
 
     print "Model Score: {}".format(clf.score())
 

@@ -10,7 +10,7 @@ from queries import CHURNED_EVENT_QUERY, CHURNED_AGE_QUERY, CHURN_PREDICTION_QUE
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.utils import shuffle
-
+from helpers import serialize_to_s3, determine_top_features
 module_path = os.path.abspath(os.path.join('../conversion_deck'))
 
 if module_path not in sys.path:
@@ -19,6 +19,7 @@ if module_path not in sys.path:
 from src.database.sql import psql_connection, pandas_engine
 from features import CHURN as FEATURE_COLUMNS
 MODEL_FILEPATH = 'data/churn_model.pkl'
+LABEL_COLUMN = 'churned'
 
 class ChurnClassifier(object):
     """docstring for ChurnClassifier."""
@@ -68,7 +69,7 @@ class ChurnClassifier(object):
     def _load_training_dataset(self):
         train_df = self.df.copy()
 
-        self.y = train_df['churned'].values
+        self.y = train_df[LABEL_COLUMN].values
         self.features = train_df[FEATURE_COLUMNS].columns
         self.X = train_df[FEATURE_COLUMNS].values
 
@@ -110,24 +111,12 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
-    print "Serializing Model"
-    with open(MODEL_FILEPATH, 'w') as pkl:
-        pickle.dump(clf, pkl)
+    # serialize_to_s3(clf, MODEL_FILEPATH, 'models/churn.pkl')
 
-    print "Uploading Model to S3"
-    with open(MODEL_FILEPATH, 'r') as pkl:
-        bucket = s3.Bucket('conversion-deck')
-        bucket.put_object(Key='models/churn.pkl', Body=pkl)
+    # print "Making Predictions on current subscribers"
+    # clf.subscriber_predictions()
 
-    print "Making Predictions on current subscribers"
-    clf.subscriber_predictions()
-
-    feature_importances = zip(clf.features, clf._clf.feature_importances_)
-    feature_importances = sorted(feature_importances, key=lambda tup: tup[1], reverse=True)
-
-    for feature, imporance in feature_importances:
-        print "{} \t {}".format(imporance, feature)
-
+    determine_top_features(clf, FEATURE_COLUMNS, 'data/churn_features.json')
     print "Model Score: {}".format(clf.score())
 
 if __name__ == '__main__':
