@@ -10,7 +10,7 @@ if module_path not in sys.path:
 from features import CONVERSION as FEATURE_COLUMNS
 from queries import CONVERTED_AGE_QUERY, CONVERTED_EVENTS_QUERY, CONVERSION_PREDICTION_QUERY
 from src.database.sql import psql_connection, pandas_engine
-from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.utils import shuffle
@@ -28,13 +28,15 @@ class ConversionClassifier(object):
             connection = psql_connection()
 
         if not clf:
+            # max_features=sqrt, n_estimators=7500, learning_rate=0.01, max_depth=20, subsample=0.1, score=0.919028, total=  54.2s
+            # max_features=log2, n_estimators=7500, learning_rate=0.01, max_depth=15, subsample=0.1, score=0.914980, total=  52.4s
             clf = GradientBoostingClassifier(
-                learning_rate=0.001,
-                n_estimators=7500,
+                learning_rate=0.01,
+                n_estimators=2000,
                 verbose=100,
-                subsample=0.01,
-                max_depth=12,
-                max_features='log2'
+                subsample=0.5,
+                max_depth=20,
+                max_features=None
             )
 
         self.connection = connection
@@ -80,7 +82,7 @@ class ConversionClassifier(object):
         y_true = self._y_test
         y_pred = self._clf.predict(self._X_test)
 
-        return recall_score(y_true, y_pred)
+        return precision_score(y_true, y_pred)
 
     def non_subscribers_predictions(self):
         conversion_query_df = pd.read_sql_query(CONVERSION_PREDICTION_QUERY, self.connection)
@@ -107,16 +109,18 @@ class ConversionClassifier(object):
 
 def grid_search():
     parameters = {
-        'learning_rate':(0.1, 0.01, 0.001,),
-        'n_estimators':[5000, 7500],
-        'subsample': [1, 0.1, 0.01],
-        'max_depth': (5, 10, 15, 20),
-        'max_features': ('log2','sqrt', None)
+        'learning_rate':(0.01, 0.001,),
+        'n_estimators':[1000, 2500, 5000],
+        'subsample': [1, 0.5, 0.25, 0.1],
+        'max_depth': (5,10, 20,),
+        'max_features': (None,'sqrt', 'log2',)
     }
     gbclf = GradientBoostingClassifier()
-    grid_clf = GridSearchCV(gbclf, parameters, n_jobs=-1, verbose=100, scoring='recall')
+    grid_clf = GridSearchCV(gbclf, parameters, n_jobs=-1, verbose=100, scoring='precision')
     clf = ConversionClassifier(clf=grid_clf)
-    clf.load_dataset()
+    print "Loading Dataset"
+    clf.load_dataset(csv=True)
+    print "Starting Grid Search"
     clf.fit()
 
     print "Grid Search Best Params"
@@ -128,7 +132,7 @@ def main():
     clf = ConversionClassifier()
 
     print "Loading dataset"
-    clf.load_dataset()
+    clf.load_dataset(csv=True)
 
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
