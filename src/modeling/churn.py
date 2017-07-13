@@ -7,7 +7,7 @@ import cPickle as pickle
 import pandas as pd
 
 from queries import CHURNED_EVENT_QUERY, CHURNED_AGE_QUERY, CHURN_PREDICTION_QUERY
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.utils import shuffle
 from helpers import serialize_to_s3, determine_top_features
@@ -20,29 +20,40 @@ from src.database.sql import psql_connection, pandas_engine
 from features import CHURN as FEATURE_COLUMNS
 MODEL_FILEPATH = 'data/churn_model.pkl'
 LABEL_COLUMN = 'churned'
+DF_PATH = 'data/churn_df.csv'
 
 class ChurnClassifier(object):
     """docstring for ChurnClassifier."""
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, clf=None):
         super(ChurnClassifier, self).__init__()
 
         if not connection:
             connection = psql_connection()
 
         self.connection = connection
-        self._clf = GradientBoostingClassifier(
-            learning_rate=0.001,
-            n_estimators=2500,
-            verbose=100,
-            max_depth=12,
-            max_features='sqrt',
-        )
+        if not clf:
+            self._clf = GradientBoostingClassifier(
+                learning_rate=0.001,
+                n_estimators=2500,
+                verbose=100,
+                max_depth=12,
+                max_features='sqrt',
+            )
+        else:
+            self._clf = clf
 
-    def load_dataset(self):
-        events_df = self._load_events_dataframe()
-        age_df = self._load_age_dataframe()
-        self.df = events_df.join(age_df, how='inner')
+
+    def load_dataset(self, csv=False):
+        if csv:
+            self.df = pd.read_csv(DF_PATH)
+        else:
+            events_df = self._load_events_dataframe()
+            age_df = self._load_age_dataframe()
+            self.df = events_df.join(age_df, how='inner')
+            self.df.to_csv(DF_PATH)
+
         self._load_training_dataset()
+
 
     def fit(self):
         return self._clf.fit(self._X_train, self._y_train)
@@ -97,6 +108,27 @@ class ChurnClassifier(object):
     def __getstate__(self):
         return { 'df': self.df, '_clf': self._clf }
 
+def grid_search():
+    parameters = {
+        'learning_rate':(0.01, 0.001,),
+        'n_estimators':[1000, 2500, 5000],
+        'subsample': [1, 0.5, 0.25, 0.1],
+        'max_depth': (5,10, 20,),
+        'max_features': (None,'sqrt', 'log2',)
+    }
+
+    gbclf = GradientBoostingClassifier()
+    grid_clf = GridSearchCV(gbclf, parameters, n_jobs=-1, verbose=100, scoring='precision')
+    clf = ChurnClassifier(clf=grid_clf)
+    print "Loading Dataset"
+    clf.load_dataset()
+    print "Starting Grid Search"
+    clf.fit()
+
+    print "Grid Search Best Params"
+    print grid_clf.best_params_
+    print grid_clf.best_score_
+
 def main():
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
@@ -120,4 +152,5 @@ def main():
     print "Model Score: {}".format(clf.score())
 
 if __name__ == '__main__':
-    main()
+    grid_search()
+    # main()

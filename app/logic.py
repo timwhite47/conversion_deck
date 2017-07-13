@@ -1,7 +1,7 @@
 from app import db
 from app.models import Conversion, Churn
 
-PAGE_SIZE = 25
+PAGE_SIZE = 250
 
 def conversions(args):
     page = _get_page_arg(args)

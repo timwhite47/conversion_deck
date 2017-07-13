@@ -28,15 +28,14 @@ class ConversionClassifier(object):
             connection = psql_connection()
 
         if not clf:
-            # max_features=sqrt, n_estimators=7500, learning_rate=0.01, max_depth=20, subsample=0.1, score=0.919028, total=  54.2s
-            # max_features=log2, n_estimators=7500, learning_rate=0.01, max_depth=15, subsample=0.1, score=0.914980, total=  52.4s
+            # {'max_features': 'sqrt', 'n_estimators': 2500, 'learning_rate': 0.01, 'max_depth': 5, 'subsample': 0.25}
             clf = GradientBoostingClassifier(
                 learning_rate=0.01,
-                n_estimators=2000,
+                n_estimators=2500,
                 verbose=100,
-                subsample=0.5,
-                max_depth=20,
-                max_features=None
+                subsample=0.25,
+                max_depth=5,
+                max_features='sqrt'
             )
 
         self.connection = connection
