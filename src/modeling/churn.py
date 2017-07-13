@@ -150,10 +150,10 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
-    # serialize_to_s3(clf, MODEL_FILEPATH, 'models/churn.pkl')
+    serialize_to_s3(clf, MODEL_FILEPATH, 'models/churn.pkl')
 
     # print "Making Predictions on current subscribers"
-    # clf.subscriber_predictions()
+    clf.subscriber_predictions()
 
     determine_top_features(clf, FEATURE_COLUMNS, 'data/churn_features.json')
     print "Model Score: {}".format(clf.score())
