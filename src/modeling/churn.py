@@ -10,6 +10,7 @@ from queries import CHURNED_EVENT_QUERY, CHURNED_AGE_QUERY, CHURN_PREDICTION_QUE
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.utils import shuffle
+from sklearn.metrics import precision_score
 from helpers import serialize_to_s3, determine_top_features
 module_path = os.path.abspath(os.path.join('../conversion_deck'))
 
@@ -52,6 +53,7 @@ class ChurnClassifier(object):
             self.df = events_df.join(age_df, how='inner')
             self.df.to_csv(DF_PATH)
 
+        self.df = shuffle(self.df)
         self._load_training_dataset()
 
 
@@ -62,7 +64,10 @@ class ChurnClassifier(object):
         return self._clf.predict_proba(X)
 
     def score(self):
-        return self._clf.score(self._X_test, self._y_test)
+        y_true = self._y_test
+        y_pred = self._clf.predict(self._X_test)
+
+        return precision_score(y_true, y_pred)
 
     def subscriber_predictions(self):
         query_df = pd.read_sql_query(CHURN_PREDICTION_QUERY, self.connection)
