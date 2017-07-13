@@ -33,12 +33,14 @@ class ChurnClassifier(object):
 
         self.connection = connection
         if not clf:
+            # {'max_features': None, 'n_estimators': 5000, 'learning_rate': 0.001, 'max_depth': 5, 'subsample': 0.5}
             self._clf = GradientBoostingClassifier(
                 learning_rate=0.001,
-                n_estimators=2500,
+                n_estimators=5000,
                 verbose=100,
-                max_depth=12,
-                max_features='sqrt',
+                max_depth=5,
+                max_features=None,
+                subsample=0.5
             )
         else:
             self._clf = clf
