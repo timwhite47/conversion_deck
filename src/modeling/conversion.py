@@ -59,17 +59,10 @@ class ConversionClassifier(object):
             self.df.to_csv('data/conversion_df.csv')
 
         self.df = shuffle(self.df)
+        self.df = self.df.fillna(0)
 
         # Set Train/Test Data
-        self.X = self.df[FEATURE_COLUMNS].fillna(0)
-        self.y = self.df[LABEL_COLUMN]
-
-        (
-            self._X_train,
-            self._X_test,
-            self._y_train,
-            self._y_test
-        ) = train_test_split(self.X.values, self.y.values)
+        self._load_training_dataset()
 
     def fit(self):
         return self._clf.fit(self._X_train, self._y_train)
@@ -102,7 +95,17 @@ class ConversionClassifier(object):
         )
 
         conversion_df[FEATURE_COLUMNS+['conversion_proba']].to_sql('conversions', pandas_engine(), if_exists='replace')
+    def _load_training_dataset(self):
+        self.X = self.df[FEATURE_COLUMNS]
+        self.y = self.df[LABEL_COLUMN]
 
+        (
+            self._X_train,
+            self._X_test,
+            self._y_train,
+            self._y_test
+        ) = train_test_split(self.X.values, self.y.values)
+        
     def __getstate__(self):
         return { 'df': self.df, '_clf': self._clf }
 

@@ -152,7 +152,7 @@ def main():
 
     serialize_to_s3(clf, MODEL_FILEPATH, 'models/churn.pkl')
 
-    # print "Making Predictions on current subscribers"
+    print "Making Predictions on current subscribers"
     clf.subscriber_predictions()
 
     determine_top_features(clf, FEATURE_COLUMNS, 'data/churn_features.json')
