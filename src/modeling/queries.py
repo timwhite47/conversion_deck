@@ -107,7 +107,7 @@ SELECT
     u.distinct_id,
     e.type,
     count(e.event_id),
-    extract(DAY FROM CURRENT_TIMESTAMP - converted_at) AS account_age,
+    LOG(extract(DAY FROM CURRENT_TIMESTAMP - converted_at)) AS account_age,
     u.vertical,
     u.camp_deliveries
 
