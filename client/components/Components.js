@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Churn from './Churn'
 import Conversion from './Conversion'
+import Dashboard from './Dashboard'
 import { Table, Thead, Th } from 'reactable'
 
 class ContentNav extends React.Component {
@@ -16,7 +17,7 @@ class ContentNav extends React.Component {
                       <span className="icon-bar bar2"></span>
                       <span className="icon-bar bar3"></span>
                   </button>
-                  <a className="navbar-brand" href="#">Dashboard</a>
+                  <a className="navbar-brand" href="#">{this.props.title}</a>
               </div>
           </div>
       </nav>
@@ -45,20 +46,20 @@ class Sidebar extends React.Component {
               </div>
 
               <ul className="nav">
-                  <li className="active">
-                      <Link to="/">
+                  <li className={ this.props.tab == 'dashboard' ? "active" : '' }>
+                      <Link to="/dashboard" onClick={() => this.props.changeTab('dashboard')}>
                           <i className="ti-dashboard"></i>
                           <p>Dashboard</p>
                       </Link>
                   </li>
-                  <li>
-                      <Link to="/conversions">
+                  <li className={ this.props.tab == 'conversion' ? "active" : '' }>
+                      <Link to="/conversions"  onClick={() => this.props.changeTab('conversion')}>
                           <i className="ti-face-smile"></i>
                           <p>Conversion</p>
                       </Link>
                   </li>
-                  <li>
-                      <Link to="/churns">
+                  <li className={ this.props.tab == 'churn' ? "active" : '' }>
+                      <Link to="/churns"  onClick={() => this.props.changeTab('churn')}>
                           <i className="ti-face-sad"></i>
                           <p>Churn</p>
                       </Link>
@@ -92,4 +93,4 @@ class Home extends Component {
 }
 
 
-export { Home, Conversion, Churn, Sidebar, Footer, ContentNav };
+export { Home, Conversion, Churn, Sidebar, Footer, ContentNav, Dashboard };

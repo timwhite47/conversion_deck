@@ -26,6 +26,16 @@ def conversions():
 def churns():
     return render_template('index.html')
 
+@app.route('/dashboard')
+def dashboard():
+    return render_template('index.html')
+
+@app.route('/api/dashboard')
+def api_dashboard():
+    stats_df = logic.dashboard_stats(request.args)
+    stats = dict(zip(stats_df.keys(), stats_df.values[0]))
+    return jsonify(stats)
+
 @app.route('/api/conversions')
 def api_conversions():
     records, count, pages, current_page = logic.conversions(request.args)
