@@ -33,7 +33,7 @@ GROUP BY u.distinct_id, c.converted_at, u.vertical, u.camp_deliveries;
 CHURNED_AGE_QUERY = """
 SELECT
     u.distinct_id,
-    LOG(1+extract(DAY FROM COALESCE(churned_at, CURRENT_TIMESTAMP) - converted_at)) AS account_age,
+    extract(DAY FROM COALESCE(churned_at, CURRENT_TIMESTAMP) - converted_at) AS account_age,
     CASE WHEN churned_at IS NOT NULL THEN TRUE ELSE FALSE END AS churned,
     camp_deliveries,
     vertical
@@ -107,7 +107,7 @@ SELECT
     u.distinct_id,
     e.type,
     count(e.event_id),
-    LOG(1+extract(DAY FROM CURRENT_TIMESTAMP - converted_at)) AS account_age,
+    extract(DAY FROM CURRENT_TIMESTAMP - converted_at) AS account_age,
     u.vertical,
     u.camp_deliveries
 
