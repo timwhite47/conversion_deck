@@ -33,14 +33,14 @@ class ChurnClassifier(object):
 
         self.connection = connection
         if not clf:
-            # {'max_features': None, 'n_estimators': 5000, 'learning_rate': 0.001, 'max_depth': 5, 'subsample': 0.5}
+            # {'max_features': 'sqrt', 'n_estimators': 5000, 'learning_rate': 0.01, 'max_depth': 5, 'subsample': 0.5}
             self._clf = GradientBoostingClassifier(
-                learning_rate=0.001,
-                # n_estimators=5000,
+                learning_rate=0.01,
+                n_estimators=5000,
                 verbose=100,
-                # max_depth=5,
-                # max_features=None,
-                # subsample=0.5
+                max_depth=5,
+                max_features='sqrt',
+                subsample=0.5
             )
         else:
             self._clf = clf
@@ -162,7 +162,7 @@ def main():
     serialize_to_s3(clf, MODEL_FILEPATH, 'models/churn_without_age.pkl')
 
     print "Making Predictions on current subscribers"
-    # clf.subscriber_predictions()
+    clf.subscriber_predictions()
 
     determine_top_features(clf, FEATURE_COLUMNS, 'data/churn_features.json')
     print "Model Score: {}".format(clf.score())
