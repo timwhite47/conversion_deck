@@ -159,7 +159,7 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
-    # serialize_to_s3(clf, MODEL_FILEPATH, 'models/churn_without_age.pkl')
+    serialize_to_s3(clf, MODEL_FILEPATH, 'models/churn_without_age.pkl')
 
     print "Making Predictions on current subscribers"
     # clf.subscriber_predictions()
@@ -168,5 +168,5 @@ def main():
     print "Model Score: {}".format(clf.score())
 
 if __name__ == '__main__':
-    # grid_search()
-    main()
+    grid_search()
+    # main()
