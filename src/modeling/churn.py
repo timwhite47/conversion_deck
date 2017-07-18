@@ -36,11 +36,11 @@ class ChurnClassifier(object):
             # {'max_features': None, 'n_estimators': 5000, 'learning_rate': 0.001, 'max_depth': 5, 'subsample': 0.5}
             self._clf = GradientBoostingClassifier(
                 learning_rate=0.001,
-                n_estimators=5000,
+                # n_estimators=5000,
                 verbose=100,
-                max_depth=5,
-                max_features=None,
-                subsample=0.5
+                # max_depth=5,
+                # max_features=None,
+                # subsample=0.5
             )
         else:
             self._clf = clf
@@ -56,6 +56,7 @@ class ChurnClassifier(object):
             self.df.to_csv(DF_PATH)
 
         self.df = shuffle(self.df)
+        self._engineer_features()
         self._load_training_dataset()
 
 
@@ -79,10 +80,18 @@ class ChurnClassifier(object):
 
         events = query_df.pivot(index='distinct_id', columns='type', values='count')
         prediction_df = events.join(ages).fillna(0)
-
+        prediction_df['signin_ratio'] = prediction_df[['account_age', 'signin']].apply(self._generate_sigin_ratio, axis=1)
         prediction_df['churn_proba'] = map(lambda prediction: prediction[1], self.predict(prediction_df[FEATURE_COLUMNS].values))
         prediction_df = prediction_df[FEATURE_COLUMNS+['churn_proba']].drop_duplicates()
         prediction_df.to_sql('churns', pandas_engine(), if_exists='replace')
+
+    def _engineer_features(self):
+        self.df['signin_ratio'] = self.df[['account_age', 'signin']].apply(self._generate_sigin_ratio, axis=1)
+        self.df.drop(['account_age'], inplace=True, axis=1)
+        self.df = self.df.fillna(0)
+
+    def _generate_sigin_ratio(self, row):
+        return row['signin']/(row['account_age']+1)
 
     def _load_training_dataset(self):
         train_df = self.df.copy()
@@ -150,10 +159,10 @@ def main():
     print "Fitting model with {} rows".format(len(clf._X_train))
     clf.fit()
 
-    serialize_to_s3(clf, MODEL_FILEPATH, 'models/churn.pkl')
+    # serialize_to_s3(clf, MODEL_FILEPATH, 'models/churn_without_age.pkl')
 
     print "Making Predictions on current subscribers"
-    clf.subscriber_predictions()
+    # clf.subscriber_predictions()
 
     determine_top_features(clf, FEATURE_COLUMNS, 'data/churn_features.json')
     print "Model Score: {}".format(clf.score())

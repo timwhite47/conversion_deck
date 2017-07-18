@@ -39,8 +39,9 @@ CONVERSION = [
 ]
 
 CHURN = [
-    "account_age",
-    "camp_deliveries",
+    # "account_age",
+    # "camp_deliveries",
+    "signin_ratio",
     "Slide start",
     "vertical_educator",
     "Editor Opened",
