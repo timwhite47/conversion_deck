@@ -28,12 +28,12 @@ class ConversionClassifier(object):
             connection = psql_connection()
 
         if not clf:
-            # {'max_features': None, 'n_estimators': 1000, 'learning_rate': 0.001, 'max_depth': 5, 'subsample': 0.5}
+            # {'max_features': None, 'n_estimators': 1000, 'learning_rate': 0.001, 'max_depth': 5, 'subsample': 1}
             clf = GradientBoostingClassifier(
                 learning_rate=0.001,
                 n_estimators=1000,
                 verbose=100,
-                subsample=0.5,
+                subsample=1,
                 max_depth=5,
                 max_features=None
             )
@@ -150,5 +150,5 @@ def main():
 
 
 if __name__ == '__main__':
-    grid_search()
+    # grid_search()
     main()
