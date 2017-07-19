@@ -33,7 +33,7 @@ class ConversionClassifier(object):
                 learning_rate=0.001,
                 n_estimators=1000,
                 verbose=100,
-                subsample=0.25,
+                subsample=0.5,
                 max_depth=5,
                 max_features=None
             )
@@ -121,7 +121,7 @@ def grid_search():
     grid_clf = GridSearchCV(gbclf, parameters, n_jobs=-1, verbose=100, scoring='precision')
     clf = ConversionClassifier(clf=grid_clf)
     print "Loading Dataset"
-    clf.load_dataset(csv=True)
+    clf.load_dataset()
     print "Starting Grid Search"
     clf.fit()
 
@@ -150,5 +150,5 @@ def main():
 
 
 if __name__ == '__main__':
-    # grid_search()
+    grid_search()
     main()
