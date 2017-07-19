@@ -28,14 +28,14 @@ class ConversionClassifier(object):
             connection = psql_connection()
 
         if not clf:
-            # {'max_features': 'sqrt', 'n_estimators': 2500, 'learning_rate': 0.01, 'max_depth': 5, 'subsample': 0.25}
+            # {'max_features': None, 'n_estimators': 1000, 'learning_rate': 0.001, 'max_depth': 5, 'subsample': 0.5}
             clf = GradientBoostingClassifier(
-                learning_rate=0.01,
-                n_estimators=2500,
+                learning_rate=0.001,
+                n_estimators=1000,
                 verbose=100,
                 subsample=0.25,
                 max_depth=5,
-                max_features='sqrt'
+                max_features=None
             )
 
         self.connection = connection
@@ -142,7 +142,7 @@ def main():
     serialize_to_s3(clf, MODEL_FILEPATH, 'models/conversion.pkl')
 
     print "Making Predictions on Basic users"
-    # clf.non_subscribers_predictions()
+    clf.non_subscribers_predictions()
 
     determine_top_features(clf, FEATURE_COLUMNS, 'data/conversion_features.json')
 
