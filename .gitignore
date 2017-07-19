@@ -4,3 +4,4 @@ data/*.pkl
 yarn.lock
 app/static/bundle.js
 node_modules/
+notebooks/*.png
