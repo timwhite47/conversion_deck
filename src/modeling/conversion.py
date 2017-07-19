@@ -105,7 +105,7 @@ class ConversionClassifier(object):
             self._y_train,
             self._y_test
         ) = train_test_split(self.X.values, self.y.values)
-        
+
     def __getstate__(self):
         return { 'df': self.df, '_clf': self._clf }
 
@@ -142,7 +142,7 @@ def main():
     serialize_to_s3(clf, MODEL_FILEPATH, 'models/conversion.pkl')
 
     print "Making Predictions on Basic users"
-    clf.non_subscribers_predictions()
+    # clf.non_subscribers_predictions()
 
     determine_top_features(clf, FEATURE_COLUMNS, 'data/conversion_features.json')
 
