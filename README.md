@@ -1,7 +1,9 @@
 # Conversion Deck
 
+My Capstone project for Galvanize's Data Science Immersive course.
 
 ## Business Understanding
+![HaikuDeck](notebooks/img/haikudeck.png)
 
 **Objective**: Finding leading factors of conversion and churn in HaikuDeck users.
 
